@@ -7,7 +7,9 @@
   <meta name="description" content="Confira as melhores ofertas do comércio de Ituiutaba-MG.">
   <title>Tijuco Promoções</title>
   <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js" defer></script>
+<script src="app.js" defer></script>
 </head>
 <body>
   <header class="topo">
@@ -79,9 +81,9 @@
       <div id="auth" class="grade-auth">
         <form id="formLogin" class="painel formulario">
           <h2>Entrar na minha loja</h2><p class="texto-secundario">Acesse sua conta para gerenciar ofertas.</p>
-          <label>WhatsApp cadastrado
-            <input name="whatsapp" type="tel" inputmode="tel" autocomplete="username" placeholder="DDD + número" required>
-          </label>
+          <label>E-mail
+  <input name="email" type="email" autocomplete="email" placeholder="seuemail@exemplo.com" required>
+</label>
           <label>Senha
             <input name="senha" type="password" autocomplete="current-password" required>
           </label>
@@ -92,10 +94,17 @@
           <h2>Cadastrar minha loja</h2><p class="texto-secundario">Crie sua conta para começar a publicar.</p>
           <label>Nome da loja
             <input name="nome" type="text" maxlength="80" autocomplete="organization" placeholder="Nome do comércio" required>
-          </label>
-          <label>WhatsApp com DDD
-            <input name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="DDD + número" required>
-          </label>
+          
+
+<label for="email-cadastro">E-mail</label>
+<input
+  type="email"
+  id="email-cadastro"
+  name="email"
+  placeholder="Digite seu e-mail"
+  autocomplete="email"
+  required
+/>
           <label>Criar senha
             <input name="senha" type="password" minlength="4" maxlength="60" autocomplete="new-password" required>
           </label>
