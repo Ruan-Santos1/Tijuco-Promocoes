@@ -1,185 +1,725 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#07172b">
-  <meta name="description" content="Confira as melhores ofertas do comércio de Ituiutaba-MG.">
-  <title>Tijuco Promoções</title>
-  <link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js" defer></script>
-<script src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07172b">
+    <meta name="description" content="Confira as melhores ofertas do comércio de Ituiutaba-MG.">
+
+    <title>Tijuco Promoções</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Biblioteca do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Scripts do projeto -->
+    <script src="supabase.js" defer></script>
+    <script src="app.js" defer></script>
 </head>
+
 <body>
-  <header class="topo">
-    <div class="topo-conteudo">
-      <a href="#" class="marca" id="voltar-inicio" aria-label="Tijuco Promoções - início">
-        <img src="logo-tijuco.jpeg" alt="Logotipo Tijuco Promoções" class="logo-principal">
-        <span class="marca-texto">
-          <strong>Tijuco Promoções</strong>
-          <small>Ofertas de Ituiutaba e região</small>
-        </span>
-      </a>
-      <p class="chamada">Economize nas compras do dia a dia!</p>
-    </div>
-    <nav class="navegacao" aria-label="Navegação principal">
-      <button type="button" class="nav-btn ativo" data-view="promos">Ofertas</button>
-      <button type="button" class="nav-btn" data-view="favs">♥ Favoritos</button>
-      <button type="button" class="nav-btn" data-view="loja">Área do lojista</button>
-    </nav>
-  </header>
 
-  <main class="container">
-    <section id="view-promos" class="view">
-      <div class="titulo-secao">
-        <div>
-          <span class="sobretitulo">OFERTAS LOCAIS</span>
-          <h1>Promoções para você</h1>
-          <p>Encontre ofertas do comércio de Ituiutaba e aproveite os preços especiais.</p>
-        </div>
-      </div>
-      <div class="filtros">
-        <label class="campo-busca">Buscar promoção
-          <input id="busca" type="search" placeholder="Digite o nome de um produto..." autocomplete="off">
-        </label>
-        <label>Categoria
-          <select id="filtroCat">
-            <option value="">Todas as categorias</option>
-            <option value="Mercado">Mercado</option><option value="Padaria">Padaria</option>
-            <option value="Moda">Moda</option><option value="Eletrônicos">Eletrônicos</option>
-            <option value="Farmácia">Farmácia</option><option value="Restaurante">Restaurante</option>
-            <option value="Casa">Casa</option><option value="Outros">Outros</option>
-          </select>
-        </label>
-        <label>Ordenar por
-          <select id="ordem">
-            <option value="recentes">Mais recentes</option>
-            <option value="desconto">Maior desconto</option>
-            <option value="menor-preco">Menor preço</option>
-            <option value="validade">Validade próxima</option>
-          </select>
-        </label>
-      </div>
-      <div id="lista" class="grade-promocoes"></div>
-    </section>
+    <!-- CABEÇALHO -->
+    <header class="topo">
+        <div class="topo-conteudo">
 
-    <section id="view-favs" class="view" hidden>
-      <div class="titulo-secao">
-        <div><span class="sobretitulo">SEUS PRODUTOS</span><h1>Minhas ofertas favoritas</h1>
-          <p>Guarde as promoções que deseja consultar depois.</p></div>
-      </div>
-      <div id="listaFavs" class="grade-promocoes"></div>
-    </section>
+            <a
+                href="#"
+                class="marca"
+                id="voltar-inicio"
+                aria-label="Tijuco Promoções - início"
+            >
+                <img
+                    src="logo-tijuco.jpeg"
+                    alt="Logotipo Tijuco Promoções"
+                    class="logo-principal"
+                >
 
-    <section id="view-loja" class="view" hidden>
-      <div class="titulo-secao">
-        <div><span class="sobretitulo">PARA COMERCIANTES</span><h1>Área do lojista</h1>
-          <p>Cadastre sua loja e divulgue seus produtos.</p></div>
-      </div>
+                <span class="marca-texto">
+                    <strong>Tijuco Promoções</strong>
+                    <small>Ofertas de Ituiutaba e região</small>
+                </span>
+            </a>
 
-      <div id="auth" class="grade-auth">
-        <form id="formLogin" class="painel formulario">
-          <h2>Entrar na minha loja</h2><p class="texto-secundario">Acesse sua conta para gerenciar ofertas.</p>
-          <label>E-mail
-  <input name="email" type="email" autocomplete="email" placeholder="seuemail@exemplo.com" required>
-</label>
-          <label>Senha
-            <input name="senha" type="password" autocomplete="current-password" required>
-          </label>
-          <button type="submit" class="botao botao-principal">Entrar</button>
-        </form>
+            <p class="chamada">
+                Economize nas compras do dia a dia!
+            </p>
 
-        <form id="formCadastro" class="painel formulario">
-          <h2>Cadastrar minha loja</h2><p class="texto-secundario">Crie sua conta para começar a publicar.</p>
-          <label>Nome da loja
-            <input name="nome" type="text" maxlength="80" autocomplete="organization" placeholder="Nome do comércio" required>
-          
-
-<label for="email-cadastro">E-mail</label>
-<input
-  type="email"
-  id="email-cadastro"
-  name="email"
-  placeholder="Digite seu e-mail"
-  autocomplete="email"
-  required
-/>
-          <label>Criar senha
-            <input name="senha" type="password" minlength="4" maxlength="60" autocomplete="new-password" required>
-          </label>
-          <button type="submit" class="botao botao-principal">Cadastrar loja</button>
-        </form>
-      </div>
-
-      <div id="painel" hidden>
-        <div class="painel-cabecalho">
-          <div><span class="sobretitulo">PAINEL COMERCIAL</span><h2>Olá, <span id="nomeLoja"></span>!</h2>
-            <p>Cadastre suas ofertas e acompanhe suas publicações.</p></div>
-          <button type="button" id="sair" class="botao botao-secundario">Sair da conta</button>
         </div>
 
-        <form id="formPromo" class="painel formulario formulario-promo">
-          <h2>Publicar uma promoção</h2>
-          <label>Nome do produto ou promoção
-            <input name="titulo" type="text" maxlength="100" placeholder="Ex.: Café 500 g" required>
-          </label>
-          <label>Descrição
-            <textarea name="descricao" rows="3" maxlength="500" placeholder="Descreva o produto e as condições da oferta."></textarea>
-          </label>
+        <!-- MENU PRINCIPAL -->
+        <nav class="navegacao" aria-label="Navegação principal">
 
-          <div class="bloco-imagem">
-            <h3>Foto do produto</h3>
-            <p class="texto-secundario">Escolha uma imagem do computador ou da galeria do celular.</p>
-            <label>Selecionar arquivo de imagem
-              <input name="arquivoImagem" id="arquivoImagem" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-              <span class="ajuda-campo">JPG, PNG, WebP ou GIF. Tamanho original máximo: 5 MB.</span>
-            </label>
-            <label>Ou cole o link de uma imagem
-              <input name="imagem" id="imagem" type="url" placeholder="https://exemplo.com/foto.jpg">
-            </label>
-            <div id="preview-container" class="preview-container" hidden>
-              <span class="ajuda-campo">Pré-visualização da foto</span>
-              <img id="preview-imagem" alt="Pré-visualização do produto">
-              <button type="button" id="remover-imagem" class="botao botao-secundario">Remover foto</button>
+            <button
+                type="button"
+                class="nav-btn ativo"
+                data-view="promos"
+            >
+                Ofertas
+            </button>
+
+            <button
+                type="button"
+                class="nav-btn"
+                data-view="favs"
+            >
+                ♥ Favoritos
+            </button>
+
+            <button
+                type="button"
+                class="nav-btn"
+                data-view="loja"
+            >
+                Área do lojista
+            </button>
+
+        </nav>
+    </header>
+
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="container">
+
+        <!-- ================================= -->
+        <!-- TELA DE OFERTAS -->
+        <!-- ================================= -->
+
+        <section id="view-promos" class="view">
+
+            <div class="titulo-secao">
+
+                <div>
+                    <span class="sobretitulo">
+                        OFERTAS LOCAIS
+                    </span>
+
+                    <h1>Promoções para você</h1>
+
+                    <p>
+                        Encontre ofertas do comércio de Ituiutaba
+                        e aproveite os preços especiais.
+                    </p>
+                </div>
+
             </div>
-          </div>
 
-          <div class="grade-campos">
-            <label>Preço original (R$)
-              <input name="de" type="number" min="0.01" step="0.01" placeholder="29.90" required>
-            </label>
-            <label>Preço promocional (R$)
-              <input name="por" type="number" min="0.01" step="0.01" placeholder="19.90" required>
-            </label>
-            <label>Categoria
-              <select name="categoria" required>
-                <option value="">Selecione</option><option value="Mercado">Mercado</option>
-                <option value="Padaria">Padaria</option><option value="Moda">Moda</option>
-                <option value="Eletrônicos">Eletrônicos</option><option value="Farmácia">Farmácia</option>
-                <option value="Restaurante">Restaurante</option><option value="Casa">Casa</option>
-                <option value="Outros">Outros</option>
-              </select>
-            </label>
-            <label>Válida até <input name="validade" type="date" required></label>
-          </div>
-          <button type="submit" class="botao botao-principal">Publicar promoção</button>
-        </form>
 
-        <section class="minhas-promocoes">
-          <h2>Minhas promoções</h2><p class="texto-secundario">Acompanhe e exclua suas ofertas.</p>
-          <div id="minhas" class="grade-promocoes"></div>
+            <!-- FILTROS -->
+            <div class="filtros">
+
+                <label class="campo-busca">
+                    Buscar promoção
+
+                    <input
+                        id="busca"
+                        type="search"
+                        placeholder="Digite o nome de um produto..."
+                        autocomplete="off"
+                    >
+                </label>
+
+
+                <label>
+                    Categoria
+
+                    <select id="filtroCat">
+
+                        <option value="">
+                            Todas as categorias
+                        </option>
+
+                        <option value="Mercado">Mercado</option>
+                        <option value="Padaria">Padaria</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Eletrônicos">Eletrônicos</option>
+                        <option value="Farmácia">Farmácia</option>
+                        <option value="Restaurante">Restaurante</option>
+                        <option value="Casa">Casa</option>
+                        <option value="Outros">Outros</option>
+
+                    </select>
+                </label>
+
+
+                <label>
+                    Ordenar por
+
+                    <select id="ordem">
+
+                        <option value="recentes">
+                            Mais recentes
+                        </option>
+
+                        <option value="desconto">
+                            Maior desconto
+                        </option>
+
+                        <option value="menor-preco">
+                            Menor preço
+                        </option>
+
+                        <option value="validade">
+                            Validade próxima
+                        </option>
+
+                    </select>
+                </label>
+
+            </div>
+
+
+            <!-- LISTAGEM DE PROMOÇÕES -->
+            <div
+                id="lista"
+                class="grade-promocoes"
+            ></div>
+
         </section>
-      </div>
-    </section>
-  </main>
 
-  <footer class="rodape">
-    <img src="logo-tijuco.jpeg" alt="" class="logo-rodape">
-    <strong>Tijuco Promoções</strong>
-    <p>Valorizando o comércio de Ituiutaba-MG.</p>
-    <small>Confirme os preços e as condições diretamente com a loja.</small>
-  </footer>
-  <div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+
+
+        <!-- ================================= -->
+        <!-- TELA DE FAVORITOS -->
+        <!-- ================================= -->
+
+        <section
+            id="view-favs"
+            class="view"
+            hidden
+        >
+
+            <div class="titulo-secao">
+
+                <div>
+                    <span class="sobretitulo">
+                        SEUS PRODUTOS
+                    </span>
+
+                    <h1>Minhas ofertas favoritas</h1>
+
+                    <p>
+                        Guarde as promoções que deseja consultar depois.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- LISTAGEM DE FAVORITOS -->
+            <div
+                id="listaFavs"
+                class="grade-promocoes"
+            ></div>
+
+        </section>
+
+
+
+        <!-- ================================= -->
+        <!-- ÁREA DO LOJISTA -->
+        <!-- ================================= -->
+
+        <section
+            id="view-loja"
+            class="view"
+            hidden
+        >
+
+            <div class="titulo-secao">
+
+                <div>
+                    <span class="sobretitulo">
+                        PARA COMERCIANTES
+                    </span>
+
+                    <h1>Área do lojista</h1>
+
+                    <p>
+                        Cadastre sua loja e divulgue seus produtos.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- LOGIN E CADASTRO -->
+            <div id="auth" class="grade-auth">
+
+
+                <!-- FORMULÁRIO DE LOGIN -->
+                <form
+                    id="formLogin"
+                    class="painel formulario"
+                >
+
+                    <h2>Entrar na minha loja</h2>
+
+                    <p class="texto-secundario">
+                        Acesse sua conta para gerenciar ofertas.
+                    </p>
+
+
+                    <label for="email-login">
+                        E-mail
+                    </label>
+
+                    <input
+                        id="email-login"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="seuemail@exemplo.com"
+                        required
+                    >
+
+
+                    <label for="senha-login">
+                        Senha
+                    </label>
+
+                    <input
+                        id="senha-login"
+                        name="senha"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+
+                    <button
+                        type="submit"
+                        class="botao botao-principal"
+                    >
+                        Entrar
+                    </button>
+
+                    <button
+                        type="button"
+                        id="esqueci"
+                        class="botao botao-secundario"
+                    >
+                        Esqueci minha senha
+                    </button>
+
+                </form>
+
+
+
+                <!-- FORMULÁRIO DE CADASTRO -->
+                <form
+                    id="formCadastro"
+                    class="painel formulario"
+                >
+
+                    <h2>Cadastrar minha loja</h2>
+
+                    <p class="texto-secundario">
+                        Crie sua conta para começar a publicar.
+                    </p>
+
+
+                    <!-- NOME DA LOJA -->
+                    <label for="nome-cadastro">
+                        Nome da loja
+                    </label>
+
+                    <input
+                        id="nome-cadastro"
+                        name="nome"
+                        type="text"
+                        maxlength="80"
+                        autocomplete="organization"
+                        placeholder="Nome do comércio"
+                        required
+                    >
+
+
+                    <!-- CNPJ -->
+                    <label for="cnpj-cadastro">
+                        CNPJ da empresa
+                    </label>
+
+                    <input
+                        id="cnpj-cadastro"
+                        name="documento"
+                        type="text"
+                        placeholder="00.000.000/0000-00"
+                        inputmode="numeric"
+                        maxlength="18"
+                        autocomplete="off"
+                        required
+                    >
+
+
+                    <!-- E-MAIL -->
+                    <label for="email-cadastro">
+                        E-mail
+                    </label>
+
+                    <input
+                        id="email-cadastro"
+                        name="email"
+                        type="email"
+                        placeholder="Digite seu e-mail"
+                        autocomplete="email"
+                        required
+                    >
+
+
+                    <!-- SENHA -->
+                    <label for="senha-cadastro">
+                        Criar senha
+                    </label>
+
+                    <input
+                        id="senha-cadastro"
+                        name="senha"
+                        type="password"
+                        minlength="6"
+                        maxlength="60"
+                        autocomplete="new-password"
+                        required
+                    >
+
+
+                    <button
+                        type="submit"
+                        class="botao botao-principal"
+                    >
+                        Cadastrar loja
+                    </button>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- ================================= -->
+            <!-- PAINEL DO LOJISTA LOGADO -->
+            <!-- ================================= -->
+
+            <div id="painel" hidden>
+
+
+                <!-- CABEÇALHO DO PAINEL -->
+                <div class="painel-cabecalho">
+
+                    <div>
+
+                        <span class="sobretitulo">
+                            PAINEL COMERCIAL
+                        </span>
+
+                        <h2>
+                            Olá,
+                            <span id="nomeLoja"></span>!
+                        </h2>
+
+                        <p>
+                            Cadastre suas ofertas e acompanhe
+                            suas publicações.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="sair"
+                        class="botao botao-secundario"
+                    >
+                        Sair da conta
+                    </button>
+
+                </div>
+
+
+
+                <!-- ================================= -->
+                <!-- FORMULÁRIO DE PROMOÇÃO -->
+                <!-- ================================= -->
+
+                <form
+                    id="formPromo"
+                    class="painel formulario formulario-promo"
+                >
+
+                    <h2>Publicar uma promoção</h2>
+
+
+                    <!-- TÍTULO -->
+                    <label for="titulo-promo">
+                        Nome do produto ou promoção
+                    </label>
+
+                    <input
+                        id="titulo-promo"
+                        name="titulo"
+                        type="text"
+                        maxlength="100"
+                        placeholder="Ex.: Café 500 g"
+                        required
+                    >
+
+
+                    <!-- DESCRIÇÃO -->
+                    <label for="descricao-promo">
+                        Descrição
+                    </label>
+
+                    <textarea
+                        id="descricao-promo"
+                        name="descricao"
+                        rows="3"
+                        maxlength="500"
+                        placeholder="Descreva o produto e as condições da oferta."
+                    ></textarea>
+
+
+
+                    <!-- IMAGEM -->
+                    <div class="bloco-imagem">
+
+                        <h3>Foto do produto</h3>
+
+                        <p class="texto-secundario">
+                            Escolha uma imagem do computador
+                            ou da galeria do celular.
+                        </p>
+
+
+                        <label for="arquivoImagem">
+                            Selecionar arquivo de imagem
+                        </label>
+
+                        <input
+                            name="arquivoImagem"
+                            id="arquivoImagem"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                        >
+
+                        <span class="ajuda-campo">
+                            JPG, PNG, WebP ou GIF.
+                            Tamanho original máximo: 5 MB.
+                        </span>
+
+
+
+                        <label for="imagem">
+                            Ou cole o link de uma imagem
+                        </label>
+
+                        <input
+                            name="imagem"
+                            id="imagem"
+                            type="url"
+                            placeholder="https://exemplo.com/foto.jpg"
+                        >
+
+
+
+                        <!-- PRÉ-VISUALIZAÇÃO -->
+                        <div
+                            id="preview-container"
+                            class="preview-container"
+                            hidden
+                        >
+
+                            <span class="ajuda-campo">
+                                Pré-visualização da foto
+                            </span>
+
+                            <img
+                                id="preview-imagem"
+                                alt="Pré-visualização do produto"
+                            >
+
+                            <button
+                                type="button"
+                                id="remover-imagem"
+                                class="botao botao-secundario"
+                            >
+                                Remover foto
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- PREÇOS, CATEGORIA E VALIDADE -->
+                    <div class="grade-campos">
+
+
+                        <label for="preco-de">
+                            Preço original (R$)
+
+                            <input
+                                id="preco-de"
+                                name="de"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                placeholder="29.90"
+                                required
+                            >
+                        </label>
+
+
+
+                        <label for="preco-por">
+                            Preço promocional (R$)
+
+                            <input
+                                id="preco-por"
+                                name="por"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                placeholder="19.90"
+                                required
+                            >
+                        </label>
+
+
+
+                        <label for="categoria-promo">
+                            Categoria
+
+                            <select
+                                id="categoria-promo"
+                                name="categoria"
+                                required
+                            >
+
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option value="Mercado">Mercado</option>
+                                <option value="Padaria">Padaria</option>
+                                <option value="Moda">Moda</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Farmácia">Farmácia</option>
+                                <option value="Restaurante">Restaurante</option>
+                                <option value="Casa">Casa</option>
+                                <option value="Outros">Outros</option>
+
+                            </select>
+                        </label>
+
+
+
+                        <label for="validade-promo">
+                            Válida até
+
+                            <input
+                                id="validade-promo"
+                                name="validade"
+                                type="date"
+                                required
+                            >
+                        </label>
+
+                    </div>
+
+
+
+                    <!-- BOTÃO PUBLICAR -->
+                    <button
+                        type="submit"
+                        class="botao botao-principal"
+                    >
+                        Publicar promoção
+                    </button>
+
+                </form>
+
+
+
+                <!-- ================================= -->
+                <!-- MINHAS PROMOÇÕES -->
+                <!-- ================================= -->
+
+                <section class="minhas-promocoes">
+
+                    <h2>Minhas promoções</h2>
+
+                    <p class="texto-secundario">
+                        Acompanhe e exclua suas ofertas.
+                    </p>
+
+                    <div
+                        id="minhas"
+                        class="grade-promocoes"
+                    ></div>
+
+                </section>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- ================================= -->
+    <!-- RODAPÉ -->
+    <!-- ================================= -->
+
+    <footer class="rodape">
+
+        <img
+            src="logo-tijuco.jpeg"
+            alt=""
+            class="logo-rodape"
+        >
+
+        <strong>Tijuco Promoções</strong>
+
+        <p>
+            Valorizando o comércio de Ituiutaba-MG.
+        </p>
+
+        <small>
+            Confirme os preços e as condições diretamente com a loja.
+        </small>
+
+    </footer>
+
+
+
+    <!-- ================================= -->
+    <!-- AVISOS DO SISTEMA -->
+    <!-- ================================= -->
+
+    <!-- Modal de detalhes e compartilhamento -->
+    <div id="modal" class="modal" hidden>
+        <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+            <button
+                type="button"
+                class="modal-fechar"
+                data-acao="fechar-modal"
+                aria-label="Fechar"
+            >&times;</button>
+            <div id="modal-corpo"></div>
+        </div>
+    </div>
+
+    <div
+        id="aviso"
+        class="aviso"
+        role="status"
+        aria-live="polite"
+        hidden
+    ></div>
+
 </body>
 </html>

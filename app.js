@@ -347,7 +347,7 @@ async function carregarDados() {
 
     const { data: lojas, error: erroLojas } = await supabaseClient
       .from('lojas')
-      .select('id,nome_loja,telefone,cidade,estado');
+      .select('*');
 
     if (erroLojas) throw erroLojas;
 
@@ -356,7 +356,12 @@ async function carregarDados() {
       nome: loja.nome_loja,
       whatsapp: loja.telefone || '',
       cidade: loja.cidade || 'Ituiutaba',
-      estado: loja.estado || 'MG'
+      estado: loja.estado || 'MG',
+      bairro: loja.bairro || '',
+      endereco: loja.endereco || '',
+      horario: loja.horario || '',
+      instagram: loja.instagram || '',
+      categoria: loja.categoria_loja || ''
     }));
 
     save(K.lojas, lojasFormatadas);
@@ -445,12 +450,21 @@ function cardHTML(p, modo = 'publico') {
       : '';
 
     const linkWhatsApp = telefone
-      ? `https://wa.me/55${telefone}?text=${encodeURIComponent(
+      ? `https://wa.me/${telefoneBR(telefone)}?text=${encodeURIComponent(
           `Olá! Tenho interesse na promoção "${p.titulo}".`
         )}`
       : '';
 
     acoes = `
+      <button
+        type="button"
+        class="botao botao-secundario"
+        data-acao="detalhes"
+        data-id="${esc(p.id)}"
+      >
+        Ver detalhes
+      </button>
+
       <button
         type="button"
         class="botao botao-favorito"
@@ -475,6 +489,15 @@ function cardHTML(p, modo = 'publico') {
           `
           : ''
       }
+
+      <button
+        type="button"
+        class="botao botao-secundario"
+        data-acao="compartilhar"
+        data-id="${esc(p.id)}"
+      >
+        Compartilhar
+      </button>
     `;
   }
 
@@ -673,22 +696,7 @@ async function renderLoja() {
         return;
       }
 
-      const { data: criada, error: erroCriacao } =
-        await supabaseClient
-          .from('lojas')
-          .upsert({
-            id: usuario.id,
-            nome_loja: nome,
-            telefone: String(meta.telefone || ''),
-            cidade: 'Ituiutaba',
-            estado: 'MG'
-          })
-          .select('*')
-          .single();
-
-      if (erroCriacao) throw erroCriacao;
-
-      perfilLoja = criada;
+      perfilLoja = await salvarPerfil(usuario, meta);
     }
 
     auth.hidden = true;
@@ -730,22 +738,31 @@ async function cadastrar(evento) {
   const formulario = evento.target;
   const dados = Object.fromEntries(new FormData(formulario));
 
-  const nome = String(dados.nome || '').trim();
   const email = String(dados.email || '').trim().toLowerCase();
   const senha = String(dados.senha || '');
 
-  if (nome.length < 2) {
-    aviso('Informe o nome da loja.');
-    return;
-  }
+  const meta = {
+    nome_loja: String(dados.nome || '').trim(),
+    responsavel: String(dados.responsavel || '').trim(),
+    documento: soDigitos(dados.documento || dados.cnpj),
+    telefone: soDigitos(dados.telefone),
+    categoria_loja: String(dados.categoria_loja || ''),
+    endereco: String(dados.endereco || '').trim(),
+    bairro: String(dados.bairro || '').trim(),
+    horario: String(dados.horario || '').trim(),
+    instagram: limparInstagram(dados.instagram)
+  };
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    aviso('Informe um e-mail válido.');
-    return;
-  }
+  const erro =
+    meta.nome_loja.length < 2 ? 'Informe o nome da loja.' :
+    (meta.documento && !documentoValido(meta.documento)) ? 'CNPJ inválido. Confira os números.' :
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Informe um e-mail válido.' :
+    senha.length < 6 ? 'A senha deve ter pelo menos 6 caracteres.' :
+    (dados.confirmar && senha !== dados.confirmar) ? 'As senhas não conferem.' :
+    '';
 
-  if (senha.length < 6) {
-    aviso('A senha deve ter pelo menos 6 caracteres.');
+  if (erro) {
+    aviso(erro);
     return;
   }
 
@@ -754,42 +771,29 @@ async function cadastrar(evento) {
       email,
       password: senha,
       options: {
-        data: {
-          nome_loja: nome
-        }
+        data: meta,
+        emailRedirectTo: window.location.origin + window.location.pathname
       }
     });
 
     if (error) throw error;
 
-    if (!data.user) {
-      aviso('O cadastro não foi concluído. Tente novamente.');
+    if (!data.user || data.user.identities?.length === 0) {
+      aviso('Esse e-mail já está cadastrado. Use "Entrar" ou recupere a senha.');
       return;
     }
 
     if (!data.session) {
       formulario.reset();
 
-      aviso(
-        'Cadastro iniciado! Confirme seu e-mail e depois entre na sua conta.'
-      );
+      aviso('Cadastro iniciado! Confirme seu e-mail e depois entre na sua conta.');
 
       return;
     }
 
     window.__tpUsuario = data.user;
 
-    const { error: erroLoja } = await supabaseClient
-      .from('lojas')
-      .upsert({
-        id: data.user.id,
-        nome_loja: nome,
-        telefone: null,
-        cidade: 'Ituiutaba',
-        estado: 'MG'
-      });
-
-    if (erroLoja) throw erroLoja;
+    await salvarPerfil(data.user, meta);
 
     formulario.reset();
 
@@ -1080,6 +1084,29 @@ function eventos() {
     if (botao.dataset.acao === 'excluir') {
       excluir(botao.dataset.id);
     }
+
+    if (botao.dataset.acao === 'detalhes') detalhes(botao.dataset.id);
+    if (botao.dataset.acao === 'compartilhar') compartilhar(botao.dataset.id);
+    if (botao.dataset.acao === 'copiar') copiarLink();
+    if (botao.dataset.acao === 'fechar-modal') fecharModal();
+  });
+
+  $('#modal')?.addEventListener('click', (evento) => {
+    if (evento.target.id === 'modal') fecharModal();
+  });
+
+  document.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape' && $('#modal') && !$('#modal').hidden) fecharModal();
+  });
+
+  $('#esqueci')?.addEventListener('click', recuperarSenha);
+
+  $('#formCadastro [name="telefone"]')?.addEventListener('input', (e) => {
+    e.target.value = mascaraTelefone(e.target.value);
+  });
+
+  $('#formCadastro [name="documento"]')?.addEventListener('input', (e) => {
+    e.target.value = mascaraDocumento(e.target.value);
   });
 
   document.addEventListener('error', (evento) => {
@@ -1102,6 +1129,306 @@ function eventos() {
   }, true);
 }
 
+/* VALIDAÇÕES E MÁSCARAS */
+
+function soDigitos(valor) {
+  return String(valor || '').replace(/\D/g, '');
+}
+
+function telefoneBR(valor) {
+  const d = soDigitos(valor);
+  return d.startsWith('55') && d.length >= 12 ? d : `55${d}`;
+}
+
+function mascaraTelefone(valor) {
+  const d = soDigitos(valor).slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+function mascaraDocumento(valor) {
+  const d = soDigitos(valor).slice(0, 14);
+  if (d.length <= 11) {
+    return d
+      .replace(/^(\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d{1,2})$/, '.$1-$2');
+  }
+  return d
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+}
+
+function documentoValido(valor) {
+  const d = soDigitos(valor);
+  if (/^(\d)\1+$/.test(d)) return false;
+
+  const digito = (base, pesos) => {
+    const soma = base.split('').reduce((t, n, i) => t + Number(n) * pesos[i], 0);
+    const resto = soma % 11;
+    return resto < 2 ? 0 : 11 - resto;
+  };
+
+  if (d.length === 11) {
+    return digito(d.slice(0, 9), [10, 9, 8, 7, 6, 5, 4, 3, 2]) === Number(d[9]) &&
+      digito(d.slice(0, 10), [11, 10, 9, 8, 7, 6, 5, 4, 3, 2]) === Number(d[10]);
+  }
+
+  if (d.length === 14) {
+    const p1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    return digito(d.slice(0, 12), p1) === Number(d[12]) &&
+      digito(d.slice(0, 13), [6, ...p1]) === Number(d[13]);
+  }
+
+  return false;
+}
+
+function limparInstagram(valor) {
+  return String(valor || '')
+    .trim()
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+    .replace(/^@/, '')
+    .replace(/[/?].*$/, '')
+    .replace(/[^A-Za-z0-9._]/g, '');
+}
+
+/* PERFIL DA LOJA (dados públicos + dados privados) */
+
+function dadosPerfil(meta) {
+  return {
+    nome_loja: String(meta.nome_loja || '').trim(),
+    telefone: soDigitos(meta.telefone),
+    categoria_loja: meta.categoria_loja || null,
+    bairro: String(meta.bairro || '').trim() || null,
+    endereco: String(meta.endereco || '').trim() || null,
+    horario: String(meta.horario || '').trim() || null,
+    instagram: limparInstagram(meta.instagram) || null,
+    cidade: 'Ituiutaba',
+    estado: 'MG'
+  };
+}
+
+async function salvarPerfil(usuario, meta) {
+  const { data, error } = await supabaseClient
+    .from('lojas')
+    .upsert({ id: usuario.id, ...dadosPerfil(meta) })
+    .select('*')
+    .single();
+
+  if (error) throw error;
+
+  if (meta.documento || meta.responsavel) {
+    const { error: erroPrivado } = await supabaseClient
+      .from('lojas_privado')
+      .upsert({
+        id: usuario.id,
+        documento: soDigitos(meta.documento),
+        responsavel: String(meta.responsavel || '').trim()
+      });
+
+    if (erroPrivado) throw erroPrivado;
+  }
+
+  return data;
+}
+
+/* MODAL */
+
+function abrirModal(html) {
+  $('#modal-corpo').innerHTML = html;
+  $('#modal').hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('#modal .modal-fechar').focus();
+}
+
+function fecharModal() {
+  $('#modal').hidden = true;
+  $('#modal-corpo').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+/* DETALHES E COMPARTILHAMENTO */
+
+function buscarPromocao(id) {
+  return todasPromocoes().find((p) => String(p.id) === String(id));
+}
+
+function lojaDe(promocao) {
+  return load(K.lojas, []).find((l) => String(l.id) === String(promocao.loja));
+}
+
+function linkPromocao(id) {
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('promo', id);
+  return url.href;
+}
+
+function textoCompartilhar(p) {
+  const loja = lojaDe(p);
+
+  return `🔥 ${p.titulo} por ${real(p.por)} (${desconto(p.de, p.por)}% OFF)` +
+    `${loja ? ` na ${loja.nome}` : ''}. Veja no Tijuco Promoções:`;
+}
+
+function detalhes(id) {
+  const p = buscarPromocao(id);
+
+  if (!p) {
+    aviso('Promoção não encontrada ou já encerrada.');
+    return;
+  }
+
+  const l = lojaDe(p) || {};
+  const foto = fonteImagem(p.imagem);
+  const telefone = numeroWhatsApp(l.whatsapp);
+
+  const mapa = l.endereco
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${l.endereco}, ${l.bairro || ''}, Ituiutaba - MG`
+      )}`
+    : '';
+
+  const zap = telefone
+    ? `https://wa.me/${telefoneBR(telefone)}?text=${encodeURIComponent(
+        `Olá! Tenho interesse na promoção "${p.titulo}".`
+      )}`
+    : '';
+
+  abrirModal(`
+    ${foto ? `<img class="modal-foto" src="${esc(foto)}" alt="${esc(p.titulo)}">` : ''}
+    <span class="card-categoria">${esc(p.categoria)}</span>
+    <h2>${esc(p.titulo)}</h2>
+    ${p.descricao ? `<p class="card-descricao">${esc(p.descricao)}</p>` : ''}
+    <div class="precos">
+      <span class="preco-antigo">${real(p.de)}</span>
+      <span class="preco-atual">${real(p.por)}</span>
+      <span class="selo-desconto selo-inline">${desconto(p.de, p.por)}% OFF</span>
+    </div>
+    <p class="card-validade">Válida até ${esc(String(p.validade).split('-').reverse().join('/'))}</p>
+
+    <div class="loja-info">
+      <h3>🏪 ${esc(l.nome || 'Loja participante')}</h3>
+      ${l.endereco ? `<p>📍 ${esc(l.endereco)}${l.bairro ? ` – ${esc(l.bairro)}` : ''}
+        <a href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver no mapa</a></p>` : ''}
+      ${l.horario ? `<p>🕒 ${esc(l.horario)}</p>` : ''}
+      ${l.instagram ? `<p>📷 <a href="https://instagram.com/${esc(l.instagram)}" target="_blank" rel="noopener noreferrer">@${esc(l.instagram)}</a></p>` : ''}
+    </div>
+
+    <div class="card-acoes">
+      ${zap ? `<a class="botao botao-whatsapp" href="${esc(zap)}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>` : ''}
+      <button type="button" class="botao botao-secundario" data-acao="compartilhar" data-id="${esc(p.id)}">Compartilhar</button>
+    </div>
+  `);
+}
+
+async function compartilhar(id) {
+  const p = buscarPromocao(id);
+  if (!p) return;
+
+  const url = linkPromocao(p.id);
+  const texto = textoCompartilhar(p);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: p.titulo, text: texto, url });
+      return;
+    } catch (erro) {
+      if (erro.name === 'AbortError') return;
+    }
+  }
+
+  const t = encodeURIComponent(texto);
+  const u = encodeURIComponent(url);
+
+  abrirModal(`
+    <h2>Compartilhar promoção</h2>
+    <p class="texto-secundario">${esc(p.titulo)}</p>
+    <div class="share-grade">
+      <a class="botao botao-whatsapp" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text=${t}%20${u}">WhatsApp</a>
+      <a class="botao botao-secundario" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=${u}">Facebook</a>
+      <a class="botao botao-secundario" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url=${u}&text=${t}">Telegram</a>
+      <a class="botao botao-secundario" href="mailto:?subject=${encodeURIComponent(p.titulo)}&body=${t}%20${u}">E-mail</a>
+    </div>
+    <label>Link da promoção
+      <input id="link-copia" readonly value="${esc(url)}">
+    </label>
+    <button type="button" class="botao botao-principal" data-acao="copiar">Copiar link</button>
+  `);
+}
+
+async function copiarLink() {
+  const campo = $('#link-copia');
+  if (!campo) return;
+
+  try {
+    await navigator.clipboard.writeText(campo.value);
+  } catch {
+    campo.select();
+    document.execCommand('copy');
+  }
+
+  aviso('Link copiado!');
+}
+
+/* RECUPERAÇÃO DE SENHA */
+
+async function recuperarSenha() {
+  if (!verificarSupabase()) return;
+
+  const email = String($('#formLogin [name="email"]')?.value || '').trim().toLowerCase();
+
+  if (!email) {
+    aviso('Digite seu e-mail no campo acima para receber o link.');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+
+    if (error) throw error;
+
+    aviso('Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.');
+  } catch (erro) {
+    console.error('Erro ao recuperar senha:', erro);
+    aviso('Não foi possível enviar o e-mail de recuperação.');
+  }
+}
+
+function pedirNovaSenha() {
+  abrirModal(`
+    <h2>Criar nova senha</h2>
+    <form id="formNovaSenha" class="formulario">
+      <label>Nova senha
+        <input name="senha" type="password" minlength="6" autocomplete="new-password" required>
+      </label>
+      <button type="submit" class="botao botao-principal">Salvar nova senha</button>
+    </form>
+  `);
+
+  $('#formNovaSenha').addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+
+    const senha = String(new FormData(evento.target).get('senha') || '');
+    const { error } = await supabaseClient.auth.updateUser({ password: senha });
+
+    if (error) {
+      aviso(error.message || 'Não foi possível alterar a senha.');
+      return;
+    }
+
+    fecharModal();
+    aviso('Senha alterada com sucesso!');
+  });
+}
+
 /* INICIALIZAÇÃO */
 
 async function iniciar() {
@@ -1122,18 +1449,23 @@ async function iniciar() {
 
     window.__tpUsuario = data?.session?.user || null;
 
-    supabaseClient.auth.onAuthStateChange((_evento, session) => {
+    supabaseClient.auth.onAuthStateChange((evento, session) => {
       window.__tpUsuario = session?.user || null;
 
       // Evita executar consultas diretamente dentro do callback de autenticação.
       setTimeout(() => {
-        carregarDados();
+        if (evento === 'PASSWORD_RECOVERY') pedirNovaSenha();
+        else if (evento === 'SIGNED_OUT') carregarDados();
       }, 0);
     });
 
     await carregarDados();
 
     mostrar('promos');
+
+    const idLink = new URLSearchParams(window.location.search).get('promo');
+
+    if (idLink) detalhes(idLink);
 
   } catch (erro) {
     console.error('Erro ao iniciar a aplicação:', erro);
