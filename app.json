@@ -1,13 +1,16 @@
 {
   "expo": {
-    "name": "TijucoApp",
+    "name": "Tijuco Promoções",
     "slug": "TijucoApp",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "orientation": "portrait",
+    "scheme": "tijuco",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.tijucopromocoes",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -16,10 +19,22 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "br.com.tijucopromocoes",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Tijuco Promoções acessa suas fotos para você escolher a imagem da oferta.",
+          "cameraPermission": "O Tijuco Promoções usa a câmera para você fotografar a oferta.",
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }
