@@ -6,12 +6,10 @@ Aplicativo mobile de promoções para o comércio de Ituiutaba-MG.
 
 Conectar consumidores a ofertas de estabelecimentos locais, permitindo consultar promoções, favoritar produtos e compartilhar ofertas.
 
-O projeto está sendo desenvolvido com Expo, React Native, TypeScript e Supabase.
-
 ## Tecnologias
 
-- React Native
 - Expo
+- React Native
 - TypeScript
 - Supabase
 - Supabase Auth
@@ -21,23 +19,23 @@ O projeto está sendo desenvolvido com Expo, React Native, TypeScript e Supabase
 ## Funcionalidades desenvolvidas
 
 ### Área do cliente
-- Cadastro e login de clientes
+
+- Cadastro e login
 - Confirmação de e-mail
 - Recuperação de senha
 - Consulta de promoções
 - Pesquisa e filtros por categoria
-- Ordenação e paginação das promoções
+- Ordenação e paginação
 - Favoritos
-- Detalhes das promoções
-- Compartilhamento de ofertas
+- Detalhes e compartilhamento de promoções
 - Denúncia de promoções
 - Exclusão de conta
 
 ### Área do lojista
-- Cadastro e login de lojistas
+
+- Cadastro e login
 - Perfil da loja
-- Cadastro e edição de promoções
-- Gerenciamento de promoções
+- Cadastro, edição e gerenciamento de promoções
 - Seleção de imagens pela câmera ou galeria
 - Upload de imagens para o Supabase Storage
 
@@ -45,7 +43,7 @@ O projeto está sendo desenvolvido com Expo, React Native, TypeScript e Supabase
 
 O projeto utiliza Supabase para autenticação, armazenamento e persistência dos dados.
 
-Tabelas e recursos envolvidos incluem:
+Tabelas e recursos envolvidos:
 
 - `lojas`
 - `lojas_privado`
@@ -72,25 +70,25 @@ npx expo start
 
 Para abrir no celular, utilize o Expo Go e escaneie o QR Code.
 
-## Observações importantes
+## Observações
 
-- O projeto mobile é separado do projeto web Tijuco Promoções.
-- As credenciais do Supabase devem ser configuradas corretamente no ambiente local.
+- O aplicativo mobile é separado do projeto web Tijuco Promoções.
+- As credenciais do Supabase devem estar configuradas corretamente.
 - Nunca enviar chaves secretas ou a `service_role` do Supabase para o GitHub.
-- As funcionalidades precisam ser testadas no aplicativo e no Supabase antes de considerar a versão pronta para produção.
+- As funcionalidades precisam ser testadas antes da publicação.
 
 ## Próximos passos
 
 - [ ] Testar cadastro e login de clientes
 - [ ] Testar cadastro e login de lojistas
-- [ ] Validar permissões e políticas RLS do Supabase
+- [ ] Validar permissões RLS do Supabase
 - [ ] Testar cadastro, edição e exclusão de promoções
 - [ ] Testar upload de imagens
 - [ ] Testar favoritos e compartilhamento
 - [ ] Validar exclusão de conta
-- [ ] Melhorar interface e experiência mobile
+- [ ] Melhorar a interface mobile
 - [ ] Preparar versão de testes para Android
 
-## Histórico do projeto
+## Histórico
 
-Este README registra o estado atual do desenvolvimento para facilitar a continuidade futura.
+Este arquivo registra o estado atual do desenvolvimento para facilitar a continuidade futura.

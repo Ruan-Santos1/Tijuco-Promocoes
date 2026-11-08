@@ -1,0 +1,293 @@
+/* 1. Variáveis e identidade visual */
+:root {
+
+  --azul: #07172b;
+
+  --azul-2: #0d2543;
+
+  --azul-3: #17385d;
+
+  --dourado: #f6b51c;
+
+  --dourado-2: #ffd66b;
+
+  --fundo: #f4f6f9;
+
+  --branco: #fff;
+
+  --texto: #1d2938;
+
+  --secundario: #687588;
+
+  --linha: #dce2ea;
+
+  --vermelho: #c8382d;
+
+  --sombra: 0 8px 28px rgba(7, 23, 43, .08);
+
+}
+
+/* 2. Reset e estilos globais */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body { margin: 0; background: var(--fundo); color: var(--texto); font-family: Arial, Helvetica, sans-serif; line-height: 1.5; }
+
+button, input, select, textarea { font: inherit; }
+
+button { cursor: pointer; }
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--dourado); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+
+/* 3. Cabeçalho e navegação */
+.topo { color: var(--branco); background: radial-gradient(ellipse at top, var(--azul-3), var(--azul) 72%); border-bottom: 4px solid var(--dourado); }
+
+.topo-conteudo { width: min(1180px, calc(100% - 32px)); min-height: 125px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+
+.marca { display: inline-flex; align-items: center; gap: 14px; color: inherit; text-decoration: none; min-width: 0; }
+
+.logo-principal { display: block; width: 100px; height: 100px; object-fit: contain; flex-shrink: 0; border-radius: 12px; background: #fff; }
+
+.marca-texto strong, .marca-texto small { display: block; }
+
+.marca-texto strong { font-size: 23px; letter-spacing: -.4px; }
+
+.marca-texto small { margin-top: 4px; color: #d9e3f0; font-size: 13px; }
+
+.chamada { margin: 0; color: var(--dourado-2); font-weight: 700; font-size: 14px; }
+
+.navegacao { display: flex; justify-content: center; gap: 8px; padding: 0 16px 15px; }
+
+.nav-btn { border: 1px solid rgba(255,255,255,.2); border-radius: 9px; padding: 10px 16px; background: transparent; color: var(--branco); font-weight: 700; transition: .2s; }
+
+.nav-btn:hover, .nav-btn.ativo { background: var(--dourado); border-color: var(--dourado); color: var(--azul); }
+
+/* 4. Layout e seções principais */
+.container { width: min(1180px, calc(100% - 32px)); min-height: 60vh; margin: 0 auto; padding: 38px 0 55px; }
+
+.view { animation: aparecer .2s ease-out; }
+
+@keyframes aparecer { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+.titulo-secao { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+
+.titulo-secao h1 { margin: 5px 0 7px; font-size: clamp(25px, 4vw, 34px); line-height: 1.2; color: var(--azul); }
+
+.titulo-secao p, .painel-cabecalho p { margin: 0; color: var(--secundario); }
+
+.sobretitulo { color: #9a6800; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; }
+
+/* 5. Filtros e campos de formulário */
+.filtros { display: grid; grid-template-columns: minmax(200px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr); gap: 14px; padding: 18px; margin-bottom: 28px; border: 1px solid var(--linha); border-radius: 14px; background: var(--branco); box-shadow: var(--sombra); }
+
+label { display: grid; gap: 7px; color: var(--texto); font-size: 13px; font-weight: 700; }
+
+input, select, textarea { width: 100%; min-width: 0; border: 1px solid #cfd7e1; border-radius: 9px; padding: 11px 12px; background: var(--branco); color: var(--texto); outline: none; }
+
+input, select { min-height: 44px; }
+
+textarea { min-height: 95px; resize: vertical; }
+
+input:focus, select:focus, textarea:focus { border-color: var(--azul-3); box-shadow: 0 0 0 3px rgba(23,56,93,.1); }
+
+input[type="file"] { padding: 8px; background: #f8fafc; }
+
+input[type="file"]::file-selector-button { margin-right: 10px; border: 0; border-radius: 6px; padding: 7px 10px; background: #fff0c7; color: var(--azul); font-weight: 700; cursor: pointer; }
+
+.ajuda-campo { display: block; color: var(--secundario); font-size: 12px; font-weight: 400; }
+
+/* 6. Grade e cards de promoções */
+.grade-promocoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+
+.card-promocao { min-width: 0; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--linha); border-radius: 15px; background: var(--branco); box-shadow: var(--sombra); transition: transform .2s, box-shadow .2s; }
+
+.card-promocao:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(7,23,43,.13); }
+
+.foto-card { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: #edf1f6; }
+
+.foto-card img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+.sem-foto { display: grid; place-items: center; gap: 8px; width: 100%; height: 100%; padding: 20px; color: var(--secundario); text-align: center; font-size: 13px; }
+
+.sem-foto-icone { font-size: 38px; }
+
+.selo-desconto { position: absolute; top: 12px; left: 12px; z-index: 1; border-radius: 7px; padding: 6px 9px; background: var(--dourado); color: var(--azul); font-size: 12px; font-weight: 900; }
+
+.card-conteudo { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 17px; }
+
+.card-categoria { width: fit-content; border-radius: 30px; padding: 4px 9px; background: #fff0c7; color: #674800; font-size: 11px; font-weight: 800; }
+
+.card-conteudo h3 { margin: 0; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }
+
+.card-descricao { margin: 0; color: var(--secundario); font-size: 13px; overflow-wrap: anywhere; white-space: pre-line; }
+
+.precos { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+
+.preco-antigo { color: var(--secundario); font-size: 13px; text-decoration: line-through; }
+
+.preco-atual { color: #a66e00; font-size: 25px; font-weight: 900; overflow-wrap: anywhere; }
+
+.card-loja, .card-validade { margin: 0; color: var(--secundario); font-size: 12px; }
+
+.card-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 5px; }
+
+.card-acoes /* 7. Botões e ações */
+.botao { flex: 1; }
+
+.botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; border: 1px solid transparent; border-radius: 9px; padding: 10px 14px; text-align: center; text-decoration: none; font-size: 13px; font-weight: 800; transition: background .2s, transform .2s; }
+
+.botao:hover { transform: translateY(-1px); }
+
+.botao-principal { background: var(--azul); color: var(--branco); border-color: var(--dourado); }
+
+.botao-principal:hover { background: var(--azul-3); }
+
+.botao-secundario { border-color: var(--linha); background: var(--branco); color: var(--texto); }
+
+.botao-secundario:hover { background: #f0f3f7; }
+
+.botao-whatsapp { background: #16874b; color: var(--branco); }
+
+.botao-whatsapp:hover { background: #116b3b; }
+
+.botao-favorito { border-color: #efd6d3; background: #fff5f4; color: var(--vermelho); }
+
+.botao-perigo { border-color: #f0d0cd; background: #fff4f3; color: var(--vermelho); }
+
+/* 8. Área de autenticação e painel do lojista */
+.grade-auth { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+
+.painel { min-width: 0; border: 1px solid var(--linha); border-radius: 15px; padding: 23px; background: var(--branco); box-shadow: var(--sombra); }
+
+.formulario { display: grid; align-content: start; gap: 17px; }
+
+.formulario h2, .minhas-promocoes h2, .painel-cabecalho h2 { margin: 0; font-size: 22px; color: var(--azul); }
+
+.texto-secundario { margin: -9px 0 0; color: var(--secundario); font-size: 13px; }
+
+.formulario .texto-secundario { margin-top: -10px; }
+
+.bloco-imagem { display: grid; gap: 15px; border: 1px dashed #d6b65d; border-radius: 12px; padding: 16px; background: #fffcf4; }
+
+.bloco-imagem h3 { margin: 0; font-size: 16px; color: var(--azul); }
+
+.bloco-imagem > p { margin-top: -10px; }
+
+.preview-container { display: grid; justify-items: start; gap: 10px; }
+
+.preview-container img { display: block; width: min(100%, 340px); max-height: 260px; aspect-ratio: 4 / 3; object-fit: contain; border: 1px solid var(--linha); border-radius: 10px; background: #edf1f6; }
+
+.grade-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+
+.painel-cabecalho { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 22px; }
+
+.painel-cabecalho p { margin-top: 7px; }
+
+.formulario-promo { margin-bottom: 35px; }
+
+.minhas-promocoes { margin-top: 20px; }
+
+.minhas-promocoes > p { margin: 6px 0 20px; }
+
+.minhas-promocoes .grade-promocoes { margin-top: 18px; }
+
+/* 9. Estados vazios e avisos */
+.estado-vazio { grid-column: 1 / -1; border: 1px dashed #cbd3de; border-radius: 14px; padding: 35px 20px; background: var(--branco); text-align: center; }
+
+.estado-vazio h3 { margin: 0 0 8px; font-size: 18px; color: var(--azul); }
+
+.estado-vazio p { margin: 0; color: var(--secundario); font-size: 14px; }
+
+.aviso { position: fixed; right: 20px; bottom: 20px; z-index: 100; width: min(420px, calc(100% - 40px)); border: 1px solid var(--dourado); border-radius: 11px; padding: 15px 18px; background: var(--azul); color: var(--branco); box-shadow: 0 8px 30px rgba(0,0,0,.2); font-size: 14px; font-weight: 700; }
+
+/* 10. Rodapé */
+.rodape { display: flex; flex-direction: column; align-items: center; padding: 25px 16px; border-top: 3px solid var(--dourado); background: var(--azul); color: var(--branco); text-align: center; }
+
+.logo-rodape { width: 56px; height: 56px; margin-bottom: 8px; border-radius: 8px; object-fit: contain; background: #fff; }
+
+.rodape strong { color: var(--dourado); }
+
+.rodape p { margin: 5px 0; color: #d9e3f0; font-size: 13px; }
+
+.rodape small { color: #c2ccda; font-size: 11px; }
+
+/* 11. Responsividade: tablets */
+@media (max-width: 900px) {
+
+  .grade-promocoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .campo-busca { grid-column: 1 / -1; }
+
+}
+
+/* 12. Responsividade: celulares */
+@media (max-width: 600px) {
+
+  .topo-conteudo { width: calc(100% - 28px); min-height: auto; align-items: flex-start; flex-direction: column; gap: 12px; padding: 15px 0 14px; }
+
+  .logo-principal { width: 76px; height: 76px; }
+
+  .marca { gap: 10px; }
+
+  .marca-texto strong { font-size: 18px; }
+
+  .marca-texto small { font-size: 12px; }
+
+  .chamada { font-size: 12px; }
+
+  .navegacao { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 0 10px 12px; }
+
+  .nav-btn { padding: 10px 5px; font-size: 12px; }
+
+  .container { width: calc(100% - 24px); padding: 26px 0 38px; }
+
+  .titulo-secao { margin-bottom: 18px; }
+
+  .titulo-secao h1 { font-size: 25px; }
+
+  .titulo-secao p { font-size: 13px; }
+
+  .filtros { grid-template-columns: 1fr; gap: 13px; padding: 14px; margin-bottom: 20px; }
+
+  .campo-busca { grid-column: auto; }
+
+  .grade-promocoes, .grade-auth { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+
+  .foto-card { aspect-ratio: 5 / 3; }
+
+  .card-conteudo { padding: 15px; }
+
+  .painel { padding: 17px; }
+
+  .grade-campos { grid-template-columns: minmax(0, 1fr); }
+
+  .painel-cabecalho { align-items: flex-start; flex-direction: column; }
+
+  .painel-cabecalho .botao { width: 100%; }
+
+  .card-acoes .botao { min-width: 0; padding: 10px 8px; }
+
+  .aviso { right: 12px; bottom: 12px; width: calc(100% - 24px); }
+
+}
+
+/* 20. Modal, compartilhamento e detalhes */
+.modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(7, 23, 43, .65); }
+.modal-caixa { position: relative; width: min(560px, 100%); max-height: 92vh; overflow-y: auto; border-radius: 15px; padding: 24px; background: var(--branco); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.modal-fechar { position: absolute; top: 10px; right: 12px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #f0f3f7; font-size: 24px; line-height: 1; }
+.modal-fechar:hover { background: var(--linha); }
+.modal-foto { display: block; width: 100%; max-height: 280px; object-fit: cover; border-radius: 11px; margin-bottom: 14px; }
+.modal-caixa h2 { margin: 8px 0; padding-right: 36px; color: var(--azul); }
+.selo-inline { position: static; display: inline-block; }
+.loja-info { margin: 16px 0; border-left: 4px solid var(--dourado); border-radius: 4px; padding: 4px 14px; background: var(--fundo); }
+.loja-info h3 { margin: 8px 0; }
+.loja-info p { margin: 6px 0; font-size: 14px; overflow-wrap: anywhere; }
+.loja-info a { color: var(--azul-3); font-weight: 700; }
+.share-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+.check { display: flex !important; flex-direction: row; gap: 10px; align-items: flex-start; font-size: 13px; font-weight: 400; color: var(--secundario); }
+.check input { width: auto; margin-top: 3px; }
