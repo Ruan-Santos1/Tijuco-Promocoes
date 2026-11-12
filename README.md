@@ -1,94 +1,116 @@
 # Tijuco Promoções
 
-Aplicativo mobile de promoções para o comércio de Ituiutaba-MG.
+<p align="center">
+  <strong>As melhores ofertas do comércio local em um só lugar.</strong>
+</p>
 
-## Objetivo
+<p align="center">
+  Plataforma de divulgação de promoções do comércio de Ituiutaba — MG.
+</p>
 
-Conectar consumidores a ofertas de estabelecimentos locais, permitindo consultar promoções, favoritar produtos e compartilhar ofertas.
+---
+
+## Sobre o projeto
+
+O **Tijuco Promoções** conecta consumidores e comerciantes de Ituiutaba, Minas Gerais. Os lojistas divulgam seus produtos e ofertas, e os consumidores encontram oportunidades de compra no comércio local.
+
+O projeto tem duas aplicações, que usam o mesmo banco de dados:
+
+- **Site** (`web/`): consulta de ofertas e área do lojista, direto no navegador.
+- **Aplicativo** (`mobile/`): versão para celular, com contas de cliente e de lojista.
+
+## Estrutura do repositório
+
+```text
+Tijuco-Promocoes/
+├── web/          Site (HTML, CSS e JavaScript)
+├── mobile/       Aplicativo (Expo, React Native e TypeScript)
+├── database/     Scripts do banco de dados (Supabase / PostgreSQL)
+├── docs/         Política de Privacidade e Termos de Uso (GitHub Pages)
+└── README.md
+```
+
+## Funcionalidades
+
+| Funcionalidade | Site | Aplicativo |
+|---|:---:|:---:|
+| Consulta de promoções, busca, filtros e ordenação | ✔ | ✔ |
+| Detalhes da oferta, WhatsApp da loja e compartilhamento | ✔ | ✔ |
+| Favoritos | ✔ (no navegador) | ✔ (na conta) |
+| Cadastro e login de lojista | ✔ | ✔ |
+| Recuperação de senha | ✔ | ✔ |
+| Publicação e exclusão de promoções | ✔ | ✔ |
+| Edição e pausa de promoções | — | ✔ |
+| Edição do perfil da loja | — | ✔ |
+| Conta de cliente | — | ✔ |
+| Denúncia de promoções | — | ✔ |
+| Exclusão de conta | — | ✔ |
 
 ## Tecnologias
 
-- Expo
-- React Native
-- TypeScript
-- Supabase
-- Supabase Auth
-- Supabase Storage
-- Git e GitHub
-
-## Funcionalidades desenvolvidas
-
-### Área do cliente
-
-- Cadastro e login
-- Confirmação de e-mail
-- Recuperação de senha
-- Consulta de promoções
-- Pesquisa e filtros por categoria
-- Ordenação e paginação
-- Favoritos
-- Detalhes e compartilhamento de promoções
-- Denúncia de promoções
-- Exclusão de conta
-
-### Área do lojista
-
-- Cadastro e login
-- Perfil da loja
-- Cadastro, edição e gerenciamento de promoções
-- Seleção de imagens pela câmera ou galeria
-- Upload de imagens para o Supabase Storage
-
-## Banco de dados
-
-O projeto utiliza Supabase para autenticação, armazenamento e persistência dos dados.
-
-Tabelas e recursos envolvidos:
-
-- `lojas`
-- `lojas_privado`
-- `clientes`
-- `promocoes`
-- `favoritos`
-- Recursos para denúncias e exclusão de contas
-
-Os scripts SQL de atualização estão disponíveis no projeto.
+| Parte | Tecnologias |
+|---|---|
+| Site | HTML5, CSS3, JavaScript |
+| Aplicativo | Expo, React Native, TypeScript |
+| Backend | Supabase (PostgreSQL, Auth e Storage) |
+| Versionamento | Git e GitHub |
 
 ## Como executar
 
-Instale as dependências:
+Clone o repositório:
+
+```bash
+git clone https://github.com/Ruan-Santos1/Tijuco-Promocoes.git
+```
+
+### Site
+
+Abra a pasta do projeto no VS Code e inicie o `web/index.html` com a extensão **Live Server**. A pasta `web/` já está configurada como raiz do Live Server.
+
+### Aplicativo
+
+```bash
+cd mobile
+```
 
 ```bash
 npm install
 ```
 
-Inicie o Expo:
-
 ```bash
 npx expo start
 ```
 
-Para abrir no celular, utilize o Expo Go e escaneie o QR Code.
+Para abrir no celular, use o Expo Go e escaneie o QR Code. O passo a passo de publicação está em [mobile/PUBLICACAO.md](mobile/PUBLICACAO.md).
 
-## Observações
+### Banco de dados
 
-- O aplicativo mobile é separado do projeto web Tijuco Promoções.
-- As credenciais do Supabase devem estar configuradas corretamente.
-- Nunca enviar chaves secretas ou a `service_role` do Supabase para o GitHub.
-- As funcionalidades precisam ser testadas antes da publicação.
+Os scripts e a situação de cada atualização estão em [database/README.md](database/README.md).
+
+A conexão com o Supabase fica em `web/supabase.js` e `mobile/src/supabase.ts`. Esses arquivos usam apenas a chave pública (publishable).
+
+> Nunca publique a chave `service_role` nem outras credenciais administrativas no código ou no GitHub.
 
 ## Próximos passos
 
-- [ ] Testar cadastro e login de clientes
-- [ ] Testar cadastro e login de lojistas
-- [ ] Validar permissões RLS do Supabase
-- [ ] Testar cadastro, edição e exclusão de promoções
-- [ ] Testar upload de imagens
-- [ ] Testar favoritos e compartilhamento
-- [ ] Validar exclusão de conta
-- [ ] Melhorar a interface mobile
-- [ ] Preparar versão de testes para Android
+- [ ] Aplicar as atualizações pendentes do banco (`database/README.md`).
+- [ ] Informar o e-mail de contato nos textos legais (`mobile/src/privacy.ts`) e publicar a pasta `docs/`.
+- [ ] Levar ao site a edição de promoções e do perfil da loja.
+- [ ] Enviar as fotos do site para o Supabase Storage, como o aplicativo já faz.
+- [ ] Testar cadastro, login, publicação e exclusão de conta nos dois aplicativos.
+- [ ] Preparar a versão de testes para Android.
+- [ ] Publicar o site em produção.
 
-## Histórico
+## Objetivo acadêmico e profissional
 
-Este arquivo registra o estado atual do desenvolvimento para facilitar a continuidade futura.
+O Tijuco Promoções faz parte da minha jornada de aprendizado em **Análise e Desenvolvimento de Sistemas (ADS)**. O projeto aplica conhecimentos de desenvolvimento web e mobile, banco de dados, autenticação, versionamento de código e integração com serviços externos.
+
+## Desenvolvedor
+
+**Ruan Santos** — [@Ruan-Santos1](https://github.com/Ruan-Santos1)
+
+---
+
+<p align="center">
+  Desenvolvido para valorizar o comércio local de Ituiutaba — MG.
+</p>
