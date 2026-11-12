@@ -27,8 +27,24 @@ Tijuco-Promocoes/
 ├── mobile/       Aplicativo (Expo, React Native e TypeScript)
 ├── database/     Scripts do banco de dados (Supabase / PostgreSQL)
 ├── docs/         Política de Privacidade e Termos de Uso (GitHub Pages)
+├── brand/        Arquivos originais do logotipo
 └── README.md
 ```
+
+## Identidade visual
+
+O site e o aplicativo usam a mesma identidade, tirada do logotipo:
+
+| Elemento | Valor |
+|---|---|
+| Azul-marinho (cor principal) | `#07172B` |
+| Azul médio | `#17385D` |
+| Dourado (destaque) | `#F6B51C` |
+| Fundo | `#F4F6F9` |
+| Tipografia do site | Plus Jakarta Sans |
+| Ícones | Traço fino (Feather no site, Ionicons no aplicativo) |
+
+As cores ficam em `web/style.css` (variáveis no início do arquivo) e em `mobile/src/theme.ts`. A pasta `brand/` guarda o logotipo original, a versão sem fundo e a marca reduzida com o javali, usada em tamanhos pequenos.
 
 ## Funcionalidades
 
