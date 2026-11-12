@@ -1,6 +1,6 @@
 // Edite estes dois campos antes de publicar o app.
 export const CONTROLADOR = 'Tijuco Promoções';
-export const CONTATO = '[informe aqui o e-mail de contato]';
+export const CONTATO = 'tritechinfo7@gmail.com';
 // Depois de publicar as páginas (pasta docs/), cole aqui os endereços públicos.
 export const POLITICA_URL = '';
 export const TERMOS_URL = '';
