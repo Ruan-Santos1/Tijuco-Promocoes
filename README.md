@@ -46,7 +46,7 @@ O objetivo é fortalecer os negócios da região, facilitar o acesso às promoç
 ```text
 Tijuco-Promocoes/
 ├── index.html
-├── estilo.css
+├── style.css
 ├── app.js
 ├── supabase.js
 ├── banco-de-dados.sql

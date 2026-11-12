@@ -134,8 +134,9 @@ input[type="file"]::file-selector-button { margin-right: 10px; border: 0; border
 
 .card-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 5px; }
 
-.card-acoes /* 7. Botões e ações */
-.botao { flex: 1; }
+.card-acoes .botao { flex: 1; }
+
+/* 7. Botões e ações */
 
 .botao { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; border: 1px solid transparent; border-radius: 9px; padding: 10px 14px; text-align: center; text-decoration: none; font-size: 13px; font-weight: 800; transition: background .2s, transform .2s; }
 
@@ -276,7 +277,7 @@ input[type="file"]::file-selector-button { margin-right: 10px; border: 0; border
 
 }
 
-/* 20. Modal, compartilhamento e detalhes */
+/* 13. Modal, compartilhamento e detalhes */
 .modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(7, 23, 43, .65); }
 .modal-caixa { position: relative; width: min(560px, 100%); max-height: 92vh; overflow-y: auto; border-radius: 15px; padding: 24px; background: var(--branco); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
 .modal-fechar { position: absolute; top: 10px; right: 12px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #f0f3f7; font-size: 24px; line-height: 1; }

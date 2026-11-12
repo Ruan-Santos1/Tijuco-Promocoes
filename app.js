@@ -756,6 +756,7 @@ async function cadastrar(evento) {
   const erro =
     meta.nome_loja.length < 2 ? 'Informe o nome da loja.' :
     (meta.documento && !documentoValido(meta.documento)) ? 'CNPJ inválido. Confira os números.' :
+    !/^\d{10,11}$/.test(meta.telefone) ? 'Informe o WhatsApp da loja com DDD.' :
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'Informe um e-mail válido.' :
     senha.length < 6 ? 'A senha deve ter pelo menos 6 caracteres.' :
     (dados.confirmar && senha !== dados.confirmar) ? 'As senhas não conferem.' :
