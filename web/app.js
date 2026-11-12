@@ -42,6 +42,11 @@ function esc(valor) {
   })[c]);
 }
 
+/* Ícone da cartela definida no início do index.html. */
+function icone(nome) {
+  return `<svg class="icone" aria-hidden="true"><use href="#i-${nome}"></use></svg>`;
+}
+
 function real(valor) {
   return Number(valor).toLocaleString('pt-BR', {
     style: 'currency',
@@ -319,6 +324,12 @@ async function atualizarPreview(origem) {
 async function carregarDados() {
   if (!verificarSupabase()) return;
 
+  const lista = $('#lista');
+
+  if (lista && !lista.children.length) {
+    lista.innerHTML = esqueletoHTML();
+  }
+
   try {
     const { data: promos, error: erroPromos } = await supabaseClient
       .from('promocoes')
@@ -381,13 +392,60 @@ async function carregarDados() {
 
 /* CARTÕES */
 
-function estadoVazio(titulo, descricao) {
+function estadoVazio(titulo, descricao, nomeIcone = 'tag') {
   return `
     <div class="estado-vazio">
+      ${icone(nomeIcone)}
       <h3>${esc(titulo)}</h3>
       <p>${esc(descricao)}</p>
     </div>
   `;
+}
+
+/* Cartões cinza exibidos enquanto as promoções são carregadas. */
+function esqueletoHTML(quantidade = 3) {
+  return Array.from({ length: quantidade }, () => `
+    <div class="card-promocao esqueleto" aria-hidden="true">
+      <div class="foto-card"></div>
+      <div class="card-conteudo">
+        <div class="linha curta"></div>
+        <div class="linha"></div>
+        <div class="linha alta"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function dataBR(validade) {
+  return String(validade).split('-').reverse().join('/');
+}
+
+function textoValidade(validade) {
+  const dias = diasRestantes(validade);
+
+  if (dias < 0) {
+    return { texto: `Encerrada em ${dataBR(validade)}`, urgente: false };
+  }
+
+  if (dias === 0) {
+    return { texto: 'Último dia da promoção', urgente: true };
+  }
+
+  if (dias <= 3) {
+    return { texto: `Termina em ${dias} dia${dias > 1 ? 's' : ''}`, urgente: true };
+  }
+
+  return { texto: `Válida até ${dataBR(validade)}`, urgente: false };
+}
+
+function linkWhatsApp(loja, promocao) {
+  const telefone = loja ? numeroWhatsApp(loja.whatsapp) : '';
+
+  if (!telefone) return '';
+
+  return `https://wa.me/${telefoneBR(telefone)}?text=${encodeURIComponent(
+    `Olá! Tenho interesse na promoção "${promocao.titulo}".`
+  )}`;
 }
 
 function cardHTML(p, modo = 'publico') {
@@ -397,38 +455,24 @@ function cardHTML(p, modo = 'publico') {
   const favoritos = load(K.favs, []).map(String);
   const favorita = favoritos.includes(String(p.id));
 
-  const lojas = load(K.lojas, []);
-
-  const loja = lojas.find(
-    (item) => String(item.id) === String(p.loja)
-  );
-
+  const loja = lojaDe(p);
   const nomeLoja = loja ? loja.nome : 'Loja participante';
-  const dias = diasRestantes(p.validade);
+  const validade = textoValidade(p.validade);
 
-  const imagemHTML = foto
-    ? `
-      <div class="foto-card">
-        <span class="selo-desconto">${percentual}% OFF</span>
-        <img
-          src="${esc(foto)}"
-          alt="${esc(p.titulo)}"
-          loading="lazy"
-        >
-        <div class="sem-foto" hidden>
-          <span class="sem-foto-icone">📷</span>
-          <span>Foto indisponível</span>
-        </div>
-      </div>
-    `
+  const botaoFavorito = modo === 'loja'
+    ? ''
     : `
-      <div class="foto-card">
-        <span class="selo-desconto">${percentual}% OFF</span>
-        <div class="sem-foto">
-          <span class="sem-foto-icone">🛍️</span>
-          <span>Foto não informada</span>
-        </div>
-      </div>
+      <button
+        type="button"
+        class="botao-coracao"
+        data-acao="favoritar"
+        data-id="${esc(p.id)}"
+        aria-pressed="${favorita}"
+        aria-label="${favorita ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}"
+        title="${favorita ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}"
+      >
+        ${icone('heart')}
+      </button>
     `;
 
   let acoes = '';
@@ -441,49 +485,33 @@ function cardHTML(p, modo = 'publico') {
         data-acao="excluir"
         data-id="${esc(p.id)}"
       >
+        ${icone('trash')}
         Excluir promoção
       </button>
     `;
   } else {
-    const telefone = loja
-      ? numeroWhatsApp(loja.whatsapp)
-      : '';
-
-    const linkWhatsApp = telefone
-      ? `https://wa.me/${telefoneBR(telefone)}?text=${encodeURIComponent(
-          `Olá! Tenho interesse na promoção "${p.titulo}".`
-        )}`
-      : '';
+    const zap = linkWhatsApp(loja, p);
 
     acoes = `
       <button
         type="button"
-        class="botao botao-secundario"
+        class="botao botao-principal"
         data-acao="detalhes"
         data-id="${esc(p.id)}"
       >
         Ver detalhes
       </button>
 
-      <button
-        type="button"
-        class="botao botao-favorito"
-        data-acao="favoritar"
-        data-id="${esc(p.id)}"
-        aria-pressed="${favorita}"
-      >
-        ${favorita ? '♥ Salvo' : '♡ Favoritar'}
-      </button>
-
       ${
-        linkWhatsApp
+        zap
           ? `
             <a
               class="botao botao-whatsapp"
-              href="${esc(linkWhatsApp)}"
+              href="${esc(zap)}"
               target="_blank"
               rel="noopener noreferrer"
             >
+              ${icone('chat')}
               WhatsApp
             </a>
           `
@@ -492,18 +520,35 @@ function cardHTML(p, modo = 'publico') {
 
       <button
         type="button"
-        class="botao botao-secundario"
+        class="botao botao-secundario botao-icone"
         data-acao="compartilhar"
         data-id="${esc(p.id)}"
+        aria-label="Compartilhar"
+        title="Compartilhar"
       >
-        Compartilhar
+        ${icone('share')}
       </button>
     `;
   }
 
   return `
     <article class="card-promocao">
-      ${imagemHTML}
+      <div class="foto-card">
+        <span class="selo-desconto">${percentual}% OFF</span>
+
+        ${
+          foto
+            ? `<img src="${esc(foto)}" alt="${esc(p.titulo)}" loading="lazy">`
+            : ''
+        }
+
+        <div class="sem-foto" ${foto ? 'hidden' : ''}>
+          ${icone(foto ? 'image' : 'bag')}
+          <span>${foto ? 'Foto indisponível' : 'Foto não informada'}</span>
+        </div>
+
+        ${botaoFavorito}
+      </div>
 
       <div class="card-conteudo">
         <span class="card-categoria">${esc(p.categoria)}</span>
@@ -517,21 +562,16 @@ function cardHTML(p, modo = 'publico') {
         }
 
         <div class="precos">
-          <span class="preco-antigo">${real(p.de)}</span>
           <span class="preco-atual">${real(p.por)}</span>
+          <span class="preco-antigo">${real(p.de)}</span>
         </div>
 
-        <p class="card-loja">🏪 ${esc(nomeLoja)}</p>
-
-        <p class="card-validade">
-          ${
-            dias === 0
-              ? 'Último dia da promoção'
-              : `Válida até ${esc(
-                  String(p.validade).split('-').reverse().join('/')
-                )}`
-          }
-        </p>
+        <ul class="card-meta">
+          <li>${icone('store')}<span>${esc(nomeLoja)}</span></li>
+          <li class="${validade.urgente ? 'urgente' : ''}">
+            ${icone(validade.urgente ? 'clock' : 'calendar')}<span>${esc(validade.texto)}</span>
+          </li>
+        </ul>
 
         <div class="card-acoes">
           ${acoes}
@@ -539,6 +579,39 @@ function cardHTML(p, modo = 'publico') {
       </div>
     </article>
   `;
+}
+
+/* CATEGORIAS (botões de filtro) */
+
+function montarChips() {
+  const chips = $('#chipsCat');
+
+  if (!chips) return;
+
+  chips.innerHTML = ['', ...CATEGORIAS].map((categoria) => `
+    <button
+      type="button"
+      class="chip"
+      data-cat="${esc(categoria)}"
+      aria-pressed="${categoria === ''}"
+    >
+      ${esc(categoria || 'Todas')}
+    </button>
+  `).join('');
+
+  chips.addEventListener('click', (evento) => {
+    const chip = evento.target.closest('.chip');
+
+    if (!chip) return;
+
+    $('#filtroCat').value = chip.dataset.cat;
+
+    chips.querySelectorAll('.chip').forEach((item) => {
+      item.setAttribute('aria-pressed', String(item === chip));
+    });
+
+    renderLista();
+  });
 }
 
 /* LISTAGEM E PESQUISA */
@@ -579,7 +652,8 @@ function renderLista() {
     ? promos.map((p) => cardHTML(p)).join('')
     : estadoVazio(
         'Nenhuma promoção encontrada',
-        'Tente mudar a busca ou escolher outra categoria.'
+        'Tente mudar a busca ou escolher outra categoria.',
+        'search'
       );
 }
 
@@ -598,7 +672,8 @@ function renderFavs() {
     ? promos.map((p) => cardHTML(p, 'favoritos')).join('')
     : estadoVazio(
         'Você ainda não tem favoritos',
-        'Quando encontrar uma oferta interessante, clique em Favoritar.'
+        'Quando encontrar uma oferta interessante, toque no coração para guardar.',
+        'heart'
       );
 }
 
@@ -1289,7 +1364,8 @@ function detalhes(id) {
 
   const l = lojaDe(p) || {};
   const foto = fonteImagem(p.imagem);
-  const telefone = numeroWhatsApp(l.whatsapp);
+  const zap = linkWhatsApp(l, p);
+  const validade = textoValidade(p.validade);
 
   const mapa = l.endereco
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -1297,35 +1373,33 @@ function detalhes(id) {
       )}`
     : '';
 
-  const zap = telefone
-    ? `https://wa.me/${telefoneBR(telefone)}?text=${encodeURIComponent(
-        `Olá! Tenho interesse na promoção "${p.titulo}".`
-      )}`
-    : '';
-
   abrirModal(`
     ${foto ? `<img class="modal-foto" src="${esc(foto)}" alt="${esc(p.titulo)}">` : ''}
     <span class="card-categoria">${esc(p.categoria)}</span>
-    <h2>${esc(p.titulo)}</h2>
+    <h2 id="modal-titulo">${esc(p.titulo)}</h2>
     ${p.descricao ? `<p class="card-descricao">${esc(p.descricao)}</p>` : ''}
     <div class="precos">
-      <span class="preco-antigo">${real(p.de)}</span>
       <span class="preco-atual">${real(p.por)}</span>
+      <span class="preco-antigo">${real(p.de)}</span>
       <span class="selo-desconto selo-inline">${desconto(p.de, p.por)}% OFF</span>
     </div>
-    <p class="card-validade">Válida até ${esc(String(p.validade).split('-').reverse().join('/'))}</p>
+    <ul class="card-meta">
+      <li class="${validade.urgente ? 'urgente' : ''}">
+        ${icone(validade.urgente ? 'clock' : 'calendar')}<span>${esc(validade.texto)}</span>
+      </li>
+    </ul>
 
     <div class="loja-info">
-      <h3>🏪 ${esc(l.nome || 'Loja participante')}</h3>
-      ${l.endereco ? `<p>📍 ${esc(l.endereco)}${l.bairro ? ` – ${esc(l.bairro)}` : ''}
-        <a href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver no mapa</a></p>` : ''}
-      ${l.horario ? `<p>🕒 ${esc(l.horario)}</p>` : ''}
-      ${l.instagram ? `<p>📷 <a href="https://instagram.com/${esc(l.instagram)}" target="_blank" rel="noopener noreferrer">@${esc(l.instagram)}</a></p>` : ''}
+      <h3>${icone('store')}${esc(l.nome || 'Loja participante')}</h3>
+      ${l.endereco ? `<p>${icone('pin')}<span>${esc(l.endereco)}${l.bairro ? ` – ${esc(l.bairro)}` : ''}
+        · <a href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver no mapa</a></span></p>` : ''}
+      ${l.horario ? `<p>${icone('clock')}<span>${esc(l.horario)}</span></p>` : ''}
+      ${l.instagram ? `<p>${icone('instagram')}<a href="https://instagram.com/${esc(l.instagram)}" target="_blank" rel="noopener noreferrer">@${esc(l.instagram)}</a></p>` : ''}
     </div>
 
     <div class="card-acoes">
-      ${zap ? `<a class="botao botao-whatsapp" href="${esc(zap)}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>` : ''}
-      <button type="button" class="botao botao-secundario" data-acao="compartilhar" data-id="${esc(p.id)}">Compartilhar</button>
+      ${zap ? `<a class="botao botao-whatsapp" href="${esc(zap)}" target="_blank" rel="noopener noreferrer">${icone('chat')}Chamar no WhatsApp</a>` : ''}
+      <button type="button" class="botao botao-secundario" data-acao="compartilhar" data-id="${esc(p.id)}">${icone('share')}Compartilhar</button>
     </div>
   `);
 }
@@ -1350,10 +1424,10 @@ async function compartilhar(id) {
   const u = encodeURIComponent(url);
 
   abrirModal(`
-    <h2>Compartilhar promoção</h2>
+    <h2 id="modal-titulo">Compartilhar promoção</h2>
     <p class="texto-secundario">${esc(p.titulo)}</p>
     <div class="share-grade">
-      <a class="botao botao-whatsapp" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text=${t}%20${u}">WhatsApp</a>
+      <a class="botao botao-whatsapp" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text=${t}%20${u}">${icone('chat')}WhatsApp</a>
       <a class="botao botao-secundario" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=${u}">Facebook</a>
       <a class="botao botao-secundario" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url=${u}&text=${t}">Telegram</a>
       <a class="botao botao-secundario" href="mailto:?subject=${encodeURIComponent(p.titulo)}&body=${t}%20${u}">E-mail</a>
@@ -1361,7 +1435,7 @@ async function compartilhar(id) {
     <label>Link da promoção
       <input id="link-copia" readonly value="${esc(url)}">
     </label>
-    <button type="button" class="botao botao-principal" data-acao="copiar">Copiar link</button>
+    <button type="button" class="botao botao-principal" data-acao="copiar" style="margin-top: 12px; width: 100%;">Copiar link</button>
   `);
 }
 
@@ -1407,7 +1481,7 @@ async function recuperarSenha() {
 
 function pedirNovaSenha() {
   abrirModal(`
-    <h2>Criar nova senha</h2>
+    <h2 id="modal-titulo">Criar nova senha</h2>
     <form id="formNovaSenha" class="formulario">
       <label>Nova senha
         <input name="senha" type="password" minlength="6" autocomplete="new-password" required>
@@ -1436,6 +1510,7 @@ function pedirNovaSenha() {
 
 async function iniciar() {
   eventos();
+  montarChips();
 
   const campoValidade = $('#formPromo [name="validade"]');
 
