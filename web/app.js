@@ -742,6 +742,8 @@ async function cadastrar(evento) {
   const senha = String(dados.senha || '');
 
   const meta = {
+    // O app mobile usa "tipo" para saber se a conta é de lojista ou de cliente.
+    tipo: 'lojista',
     nome_loja: String(dados.nome || '').trim(),
     responsavel: String(dados.responsavel || '').trim(),
     documento: soDigitos(dados.documento || dados.cnpj),
