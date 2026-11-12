@@ -1,6 +1,8 @@
 // Gera docs/index.html (Política) e docs/termos.html (Termos) a partir do texto do app.
-// Uso: npm run paginas
+// As páginas ficam em docs/, na raiz do repositório (pasta publicada pelo GitHub Pages).
+// Uso (dentro de mobile/): npm run paginas
 import { mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { ATUALIZADA_EM, POLITICA } from '../src/privacy';
 import { TERMOS } from '../src/terms';
 
@@ -30,7 +32,9 @@ ${secoes.map((s) => `<h2>${esc(s.titulo)}</h2>\n${esc(s.texto).split('\n').map((
 </html>
 `;
 
-mkdirSync('docs', { recursive: true });
-writeFileSync('docs/index.html', page('Política de Privacidade', POLITICA, 'Veja também os <a href="termos.html">Termos de Uso</a>.'));
-writeFileSync('docs/termos.html', page('Termos de Uso', TERMOS, 'Veja também a <a href="index.html">Política de Privacidade</a>.'));
-console.log('Páginas geradas em docs/');
+const DOCS = join(__dirname, '..', '..', 'docs');
+
+mkdirSync(DOCS, { recursive: true });
+writeFileSync(join(DOCS, 'index.html'), page('Política de Privacidade', POLITICA, 'Veja também os <a href="termos.html">Termos de Uso</a>.'));
+writeFileSync(join(DOCS, 'termos.html'), page('Termos de Uso', TERMOS, 'Veja também a <a href="index.html">Política de Privacidade</a>.'));
+console.log(`Páginas geradas em ${DOCS}`);

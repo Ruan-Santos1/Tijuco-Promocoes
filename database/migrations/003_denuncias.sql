@@ -1,6 +1,6 @@
 -- Tijuco Promoções v1.2: denúncias de ofertas
 -- Rode UMA vez em Supabase > SQL Editor > New query > Run
--- (rode antes o supabase-atualizacao.sql, se ainda não rodou)
+-- (rode antes o 002_clientes_fotos_exclusao_conta.sql, se ainda não rodou)
 
 create table if not exists public.denuncias (
   id uuid primary key default gen_random_uuid(),

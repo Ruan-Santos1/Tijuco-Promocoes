@@ -1,15 +1,17 @@
-# Publicação do Tijuco Promoções
+# Publicação do aplicativo Tijuco Promoções
+
+Os comandos abaixo são executados dentro da pasta `mobile/`.
 
 ## 1. Banco de dados (Supabase)
-1. SQL Editor: rode `supabase-atualizacao.sql` e depois `supabase-atualizacao-2.sql`.
+1. SQL Editor: rode os scripts pendentes de `database/migrations/`, em ordem. A situação de cada um está em `database/README.md`.
 2. Authentication > URL Configuration > Redirect URLs: adicione `tijuco://reset-password`.
 3. Authentication > Emails > SMTP Settings: configure um SMTP próprio (Resend ou Brevo, por exemplo).
 4. Confira o RLS das tabelas `lojas`, `promocoes` e `favoritos`.
 
 ## 2. Textos legais
-1. Edite `src/privacy.ts`: e-mail de contato (`CONTATO`) e nome do responsável (`CONTROLADOR`).
-2. Rode `npm run paginas` para regenerar `docs/index.html` (Política) e `docs/termos.html` (Termos).
-3. GitHub: Settings > Pages > Branch `main`, pasta `/docs`. Cole os endereços em `POLITICA_URL` e `TERMOS_URL` (`src/privacy.ts`).
+1. Edite `mobile/src/privacy.ts`: e-mail de contato (`CONTATO`) e nome do responsável (`CONTROLADOR`).
+2. Rode `npm run paginas` para regenerar `docs/index.html` (Política) e `docs/termos.html` (Termos), na raiz do repositório.
+3. GitHub: Settings > Pages > Branch `main`, pasta `/docs`. Cole os endereços em `POLITICA_URL` e `TERMOS_URL` (`mobile/src/privacy.ts`).
 
 ## 3. Build
 1. `npm install -g eas-cli` (ou use `npx`), depois `eas login` e `eas init`.
