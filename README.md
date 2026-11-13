@@ -121,6 +121,10 @@ A conexão com o Supabase fica em `web/supabase.js` e `mobile/src/supabase.ts`. 
 
 O Tijuco Promoções faz parte da minha jornada de aprendizado em **Análise e Desenvolvimento de Sistemas (ADS)**. O projeto aplica conhecimentos de desenvolvimento web e mobile, banco de dados, autenticação, versionamento de código e integração com serviços externos.
 
+## Licença
+
+Este projeto está sob a [licença MIT](LICENSE): o código pode ser usado e adaptado livremente, desde que o crédito seja mantido.
+
 ## Desenvolvedor
 
 **Ruan Santos** — [@Ruan-Santos1](https://github.com/Ruan-Santos1)
