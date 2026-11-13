@@ -334,6 +334,10 @@ input[type="file"]::file-selector-button {
 
 .card-meta .urgente { color: var(--vermelho); font-weight: 600; }
 
+.card-meta .ok { color: var(--verde); font-weight: 600; }
+
+.card-meta .pausada { color: var(--dourado-escuro); font-weight: 600; }
+
 .card-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 8px; }
 
 .card-acoes .botao { flex: 1; }
@@ -420,6 +424,8 @@ input[type="file"]::file-selector-button {
 .grade-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
 
 .painel-cabecalho { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
+
+.painel-botoes { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .painel-cabecalho h2 { margin-top: 6px; font-size: 26px; }
 
@@ -541,6 +547,8 @@ input[type="file"]::file-selector-button {
   .painel { padding: 18px; }
 
   .painel-cabecalho { align-items: flex-start; flex-direction: column; }
+
+  .painel-botoes { width: 100%; }
 
   .painel-cabecalho .botao { width: 100%; }
 

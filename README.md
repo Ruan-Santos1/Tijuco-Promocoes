@@ -56,8 +56,9 @@ As cores ficam em `web/style.css` (variáveis no início do arquivo) e em `mobil
 | Cadastro e login de lojista | ✔ | ✔ |
 | Recuperação de senha | ✔ | ✔ |
 | Publicação e exclusão de promoções | ✔ | ✔ |
-| Edição e pausa de promoções | — | ✔ |
-| Edição do perfil da loja | — | ✔ |
+| Edição e pausa de promoções | ✔ | ✔ |
+| Edição do perfil da loja | ✔ | ✔ |
+| Fotos no Supabase Storage | ✔ | ✔ |
 | Conta de cliente | — | ✔ |
 | Denúncia de promoções | — | ✔ |
 | Exclusão de conta | — | ✔ |
@@ -110,9 +111,9 @@ A conexão com o Supabase fica em `web/supabase.js` e `mobile/src/supabase.ts`. 
 ## Próximos passos
 
 - [ ] Publicar a pasta `docs/` no GitHub Pages e informar os endereços em `mobile/src/privacy.ts`.
-- [ ] Levar ao site a edição de promoções e do perfil da loja.
-- [ ] Enviar as fotos do site para o Supabase Storage, como o aplicativo já faz.
 - [ ] Testar cadastro, login, publicação e exclusão de conta nos dois aplicativos.
+- [ ] Configurar um SMTP próprio no Supabase para os e-mails de confirmação.
+- [ ] Hospedar o site (Vercel ou Netlify, pasta `web/`).
 - [ ] Preparar a versão de testes para Android.
 - [ ] Publicar o site em produção.
 

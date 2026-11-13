@@ -14,6 +14,9 @@ const K = {
 };
 
 let imagemSelecionada = '';
+let imagemAtual = '';        // foto já salva da promoção em edição
+let editandoId = null;       // id da promoção em edição (null = publicando nova)
+let minhasPromos = [];       // promoções do lojista logado, inclusive pausadas e vencidas
 let temporizadorAviso = null;
 
 /* UTILITÁRIOS */
@@ -263,6 +266,7 @@ function mostrarPreview(endereco) {
 
 function limparImagem() {
   imagemSelecionada = '';
+  imagemAtual = '';
 
   if ($('#arquivoImagem')) {
     $('#arquivoImagem').value = '';
@@ -321,6 +325,23 @@ async function atualizarPreview(origem) {
 
 /* CARREGAR DADOS DO SUPABASE */
 
+/* Converte uma linha da tabela promocoes para o formato usado nas telas. */
+function formatarPromo(p) {
+  return {
+    id: p.id,
+    loja: p.loja_id,
+    titulo: p.titulo,
+    descricao: p.descricao || '',
+    imagem: p.imagem_url || '',
+    de: Number(p.preco_original ?? p.preco ?? 0),
+    por: Number(p.preco ?? 0),
+    categoria: p.categoria || 'Outros',
+    validade: p.validade || '',
+    ativa: p.ativa !== false,
+    criada: p.created_at ? new Date(p.created_at).getTime() : 0
+  };
+}
+
 async function carregarDados() {
   if (!verificarSupabase()) return;
 
@@ -339,22 +360,7 @@ async function carregarDados() {
 
     if (erroPromos) throw erroPromos;
 
-    const promocoesFormatadas = (promos || []).map((p) => ({
-      id: p.id,
-      loja: p.loja_id,
-      titulo: p.titulo,
-      descricao: p.descricao || '',
-      imagem: p.imagem_url || '',
-      de: Number(p.preco_original ?? p.preco ?? 0),
-      por: Number(p.preco ?? 0),
-      categoria: p.categoria || 'Outros',
-      validade: p.validade || '',
-      criada: p.created_at
-        ? new Date(p.created_at).getTime()
-        : 0
-    }));
-
-    save(K.promos, promocoesFormatadas);
+    save(K.promos, (promos || []).map(formatarPromo));
 
     const { data: lojas, error: erroLojas } = await supabaseClient
       .from('lojas')
@@ -448,6 +454,19 @@ function linkWhatsApp(loja, promocao) {
   )}`;
 }
 
+/* Situação da oferta na área do lojista. */
+function statusHTML(p) {
+  if (diasRestantes(p.validade) < 0) {
+    return `<li>${icone('clock')}<span>Vencida — edite a validade para reativar</span></li>`;
+  }
+
+  if (!p.ativa) {
+    return `<li class="pausada">${icone('pause')}<span>Pausada — não aparece para os clientes</span></li>`;
+  }
+
+  return `<li class="ok">${icone('tag')}<span>Ativa</span></li>`;
+}
+
 function cardHTML(p, modo = 'publico') {
   const foto = fonteImagem(p.imagem);
   const percentual = desconto(p.de, p.por);
@@ -478,15 +497,44 @@ function cardHTML(p, modo = 'publico') {
   let acoes = '';
 
   if (modo === 'loja') {
+    const vencida = diasRestantes(p.validade) < 0;
+
     acoes = `
       <button
         type="button"
-        class="botao botao-perigo"
-        data-acao="excluir"
+        class="botao botao-secundario"
+        data-acao="editar"
         data-id="${esc(p.id)}"
       >
+        ${icone('edit')}
+        Editar
+      </button>
+
+      ${
+        vencida
+          ? ''
+          : `
+            <button
+              type="button"
+              class="botao botao-secundario"
+              data-acao="pausar"
+              data-id="${esc(p.id)}"
+            >
+              ${icone(p.ativa ? 'pause' : 'play')}
+              ${p.ativa ? 'Pausar' : 'Reativar'}
+            </button>
+          `
+      }
+
+      <button
+        type="button"
+        class="botao botao-perigo botao-icone"
+        data-acao="excluir"
+        data-id="${esc(p.id)}"
+        aria-label="Excluir promoção"
+        title="Excluir promoção"
+      >
         ${icone('trash')}
-        Excluir promoção
       </button>
     `;
   } else {
@@ -567,7 +615,11 @@ function cardHTML(p, modo = 'publico') {
         </div>
 
         <ul class="card-meta">
-          <li>${icone('store')}<span>${esc(nomeLoja)}</span></li>
+          ${
+            modo === 'loja'
+              ? statusHTML(p)
+              : `<li>${icone('store')}<span>${esc(nomeLoja)}</span></li>`
+          }
           <li class="${validade.urgente ? 'urgente' : ''}">
             ${icone(validade.urgente ? 'clock' : 'calendar')}<span>${esc(validade.texto)}</span>
           </li>
@@ -779,12 +831,22 @@ async function renderLoja() {
 
     $('#nomeLoja').textContent = perfilLoja.nome_loja;
 
-    const minhas = todasPromocoes()
-      .filter((p) => String(p.loja) === String(perfilLoja.id))
-      .sort((a, b) => Number(b.criada) - Number(a.criada));
+    montarPerfil(perfilLoja);
 
-    $('#minhas').innerHTML = minhas.length
-      ? minhas.map((p) => cardHTML(p, 'loja')).join('')
+    // Busca direto no banco para incluir as ofertas pausadas e vencidas,
+    // que não entram na listagem pública.
+    const { data: minhasDb, error: erroMinhas } = await supabaseClient
+      .from('promocoes')
+      .select('*')
+      .eq('loja_id', perfilLoja.id)
+      .order('created_at', { ascending: false });
+
+    if (erroMinhas) throw erroMinhas;
+
+    minhasPromos = (minhasDb || []).map(formatarPromo);
+
+    $('#minhas').innerHTML = minhasPromos.length
+      ? minhasPromos.map((p) => cardHTML(p, 'loja')).join('')
       : estadoVazio(
           'Você ainda não publicou ofertas',
           'Use o formulário acima para publicar sua primeira promoção.'
@@ -935,7 +997,103 @@ async function entrar(evento) {
   }
 }
 
-/* PUBLICAR PROMOÇÃO */
+/* FOTO DA OFERTA (Supabase Storage) */
+
+/**
+ * Envia a foto (em data URL) para o bucket "promocoes" e devolve o endereço público.
+ * Se o envio falhar e a foto for pequena, salva no formato antigo para não travar o lojista.
+ */
+async function enviarFoto(usuarioId, dataUrl) {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const caminho = `${usuarioId}/${Date.now()}.jpg`;
+
+    const { error } = await supabaseClient.storage
+      .from('promocoes')
+      .upload(caminho, blob, { contentType: 'image/jpeg' });
+
+    if (error) throw error;
+
+    return supabaseClient.storage.from('promocoes').getPublicUrl(caminho).data.publicUrl;
+  } catch (erro) {
+    console.error('Erro ao enviar a foto para o Storage:', erro);
+
+    if (dataUrl.length <= 400000) return dataUrl;
+
+    throw new Error('Não foi possível enviar a foto. Tente novamente em instantes.');
+  }
+}
+
+/* PUBLICAR E EDITAR PROMOÇÃO */
+
+/* Volta o formulário para o modo "publicar nova". */
+function resetarFormPromo() {
+  editandoId = null;
+
+  $('#formPromo')?.reset();
+  limparImagem();
+
+  if ($('#tituloFormPromo')) $('#tituloFormPromo').textContent = 'Publicar uma promoção';
+  if ($('#btnPublicar')) $('#btnPublicar').textContent = 'Publicar promoção';
+  if ($('#cancelarEdicao')) $('#cancelarEdicao').hidden = true;
+}
+
+/* Preenche o formulário com uma oferta já publicada. */
+function iniciarEdicao(id) {
+  const p = minhasPromos.find((item) => String(item.id) === String(id));
+
+  if (!p) return;
+
+  editandoId = p.id;
+
+  $('#titulo-promo').value = p.titulo;
+  $('#descricao-promo').value = p.descricao || '';
+  $('#preco-de').value = p.de || '';
+  $('#preco-por').value = p.por || '';
+  $('#categoria-promo').value = p.categoria || '';
+  $('#validade-promo').value = p.validade || '';
+
+  imagemSelecionada = '';
+  imagemAtual = p.imagem || '';
+
+  if ($('#arquivoImagem')) $('#arquivoImagem').value = '';
+  if ($('#imagem')) $('#imagem').value = '';
+
+  mostrarPreview(fonteImagem(imagemAtual));
+
+  $('#tituloFormPromo').textContent = 'Editar promoção';
+  $('#btnPublicar').textContent = 'Salvar alterações';
+  $('#cancelarEdicao').hidden = false;
+
+  $('#formPromo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* Pausa ou reativa uma oferta. */
+async function pausarRetomar(id) {
+  if (!verificarSupabase()) return;
+
+  const usuario = usuarioAtual();
+  const p = minhasPromos.find((item) => String(item.id) === String(id));
+
+  if (!usuario || !p) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from('promocoes')
+      .update({ ativa: !p.ativa })
+      .eq('id', p.id)
+      .eq('loja_id', usuario.id);
+
+    if (error) throw error;
+
+    await carregarDados();
+
+    aviso(p.ativa ? 'Promoção pausada. Ela não aparece mais para os clientes.' : 'Promoção reativada!');
+  } catch (erro) {
+    console.error('Erro ao pausar/reativar:', erro);
+    aviso('Não foi possível alterar a promoção.');
+  }
+}
 
 async function publicar(evento) {
   evento.preventDefault();
@@ -1004,42 +1162,55 @@ async function publicar(evento) {
       imagem = await arquivoParaImagem(arquivo);
     } else if (imagemSelecionada) {
       imagem = imagemSelecionada;
+    } else if (!imagem) {
+      imagem = imagemAtual; // edição sem trocar a foto
+    }
+
+    // Foto nova vai para o Supabase Storage; no banco fica só o endereço.
+    if (imagem.startsWith('data:')) {
+      imagem = await enviarFoto(usuario.id, imagem);
     }
   } catch (erro) {
     aviso(erro.message);
     return;
   }
 
+  const dadosPromo = {
+    titulo,
+    descricao,
+    preco_original: de,
+    preco: por,
+    imagem_url: imagem || null,
+    categoria,
+    validade,
+    ativa: true
+  };
+
+  const editando = editandoId;
+
   try {
-    const { error } = await supabaseClient
-      .from('promocoes')
-      .insert({
-        loja_id: usuario.id,
-        titulo,
-        descricao,
-        preco_original: de,
-        preco: por,
-        imagem_url: imagem || null,
-        categoria,
-        validade,
-        ativa: true
-      });
+    const { error } = editando
+      ? await supabaseClient
+          .from('promocoes')
+          .update(dadosPromo)
+          .eq('id', editando)
+          .eq('loja_id', usuario.id)
+      : await supabaseClient
+          .from('promocoes')
+          .insert({ ...dadosPromo, loja_id: usuario.id });
 
     if (error) throw error;
 
-    formulario.reset();
-    limparImagem();
+    resetarFormPromo();
 
     await carregarDados();
 
-    aviso('Promoção publicada com sucesso!');
+    aviso(editando ? 'Promoção atualizada!' : 'Promoção publicada com sucesso!');
 
   } catch (erro) {
-    console.error('Erro ao publicar promoção:', erro);
+    console.error('Erro ao salvar promoção:', erro);
 
-    aviso(
-      'Não foi possível publicar. Confira as colunas da tabela promocoes e as permissões do banco.'
-    );
+    aviso('Não foi possível salvar a promoção. Tente novamente.');
   }
 }
 
@@ -1055,7 +1226,7 @@ async function excluir(id) {
     return;
   }
 
-  const promocao = todasPromocoes().find(
+  const promocao = minhasPromos.find(
     (p) => String(p.id) === String(id)
   );
 
@@ -1082,6 +1253,8 @@ async function excluir(id) {
 
     if (error) throw error;
 
+    if (String(editandoId) === String(id)) resetarFormPromo();
+
     await carregarDados();
 
     aviso('Promoção excluída.');
@@ -1104,6 +1277,10 @@ async function sair() {
     if (error) throw error;
 
     window.__tpUsuario = null;
+
+    resetarFormPromo();
+
+    if ($('#formPerfil')) $('#formPerfil').hidden = true;
 
     await renderLoja();
 
@@ -1140,6 +1317,26 @@ function eventos() {
 
   $('#sair')?.addEventListener('click', sair);
 
+  $('#btnPerfil')?.addEventListener('click', () => {
+    const form = $('#formPerfil');
+
+    if (!form) return;
+
+    form.hidden = !form.hidden;
+
+    if (!form.hidden) {
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  $('#formPerfil')?.addEventListener('submit', salvarPerfilSite);
+
+  $('#formPerfil [name="telefone"]')?.addEventListener('input', (e) => {
+    e.target.value = mascaraTelefone(e.target.value);
+  });
+
+  $('#cancelarEdicao')?.addEventListener('click', resetarFormPromo);
+
   $('#arquivoImagem')?.addEventListener('change', () => {
     atualizarPreview('arquivo');
   });
@@ -1162,6 +1359,9 @@ function eventos() {
     if (botao.dataset.acao === 'excluir') {
       excluir(botao.dataset.id);
     }
+
+    if (botao.dataset.acao === 'editar') iniciarEdicao(botao.dataset.id);
+    if (botao.dataset.acao === 'pausar') pausarRetomar(botao.dataset.id);
 
     if (botao.dataset.acao === 'detalhes') detalhes(botao.dataset.id);
     if (botao.dataset.acao === 'compartilhar') compartilhar(botao.dataset.id);
@@ -1312,6 +1512,72 @@ async function salvarPerfil(usuario, meta) {
   }
 
   return data;
+}
+
+/* DADOS DA LOJA NO SITE */
+
+/* Preenche o formulário "Dados da loja" com o cadastro atual. */
+function montarPerfil(loja) {
+  const form = $('#formPerfil');
+
+  if (!form || !loja) return;
+
+  form.nome.value = loja.nome_loja || '';
+  form.telefone.value = mascaraTelefone(loja.telefone || '');
+  form.categoria_loja.value = loja.categoria_loja || '';
+  form.endereco.value = loja.endereco || '';
+  form.bairro.value = loja.bairro || '';
+  form.horario.value = loja.horario || '';
+  form.instagram.value = loja.instagram || '';
+}
+
+async function salvarPerfilSite(evento) {
+  evento.preventDefault();
+
+  if (!verificarSupabase()) return;
+
+  const usuario = usuarioAtual();
+
+  if (!usuario) return;
+
+  const dados = Object.fromEntries(new FormData(evento.target));
+  const telefone = soDigitos(dados.telefone);
+
+  const erro =
+    String(dados.nome || '').trim().length < 2 ? 'Informe o nome da loja.' :
+    !/^\d{10,11}$/.test(telefone) ? 'Informe o WhatsApp da loja com DDD.' :
+    '';
+
+  if (erro) {
+    aviso(erro);
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('lojas')
+      .update({
+        nome_loja: String(dados.nome).trim(),
+        telefone,
+        categoria_loja: dados.categoria_loja || null,
+        endereco: String(dados.endereco || '').trim() || null,
+        bairro: String(dados.bairro || '').trim() || null,
+        horario: String(dados.horario || '').trim() || null,
+        instagram: limparInstagram(dados.instagram) || null
+      })
+      .eq('id', usuario.id);
+
+    if (error) throw error;
+
+    $('#formPerfil').hidden = true;
+
+    await carregarDados();
+
+    aviso('Dados da loja atualizados!');
+  } catch (erro) {
+    console.error('Erro ao salvar os dados da loja:', erro);
+    aviso('Não foi possível salvar os dados da loja.');
+  }
 }
 
 /* MODAL */

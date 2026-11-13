@@ -50,6 +50,9 @@
         <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
         <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
         <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+        <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
     </svg>
 
 
@@ -433,12 +436,140 @@
                         <p>Cadastre suas ofertas e acompanhe suas publicações.</p>
                     </div>
 
-                    <button type="button" id="sair" class="botao botao-secundario">
-                        <svg class="icone" aria-hidden="true"><use href="#i-logout"></use></svg>
-                        Sair da conta
-                    </button>
+                    <div class="painel-botoes">
+
+                        <button type="button" id="btnPerfil" class="botao botao-secundario">
+                            <svg class="icone" aria-hidden="true"><use href="#i-edit"></use></svg>
+                            Editar dados da loja
+                        </button>
+
+                        <button type="button" id="sair" class="botao botao-secundario">
+                            <svg class="icone" aria-hidden="true"><use href="#i-logout"></use></svg>
+                            Sair da conta
+                        </button>
+
+                    </div>
 
                 </div>
+
+
+
+                <!-- ================================= -->
+                <!-- DADOS DA LOJA -->
+                <!-- ================================= -->
+
+                <form id="formPerfil" class="painel formulario formulario-promo" hidden>
+
+                    <h2>Dados da loja</h2>
+
+                    <p class="texto-secundario">
+                        Essas informações aparecem nos detalhes das suas ofertas.
+                    </p>
+
+
+                    <label for="perfil-nome">
+                        Nome da loja
+                    </label>
+
+                    <input
+                        id="perfil-nome"
+                        name="nome"
+                        type="text"
+                        maxlength="80"
+                        required
+                    >
+
+
+                    <label for="perfil-telefone">
+                        WhatsApp da loja
+                    </label>
+
+                    <input
+                        id="perfil-telefone"
+                        name="telefone"
+                        type="tel"
+                        placeholder="(34) 99999-9999"
+                        inputmode="numeric"
+                        maxlength="15"
+                        required
+                    >
+
+
+                    <label for="perfil-categoria">
+                        Categoria principal
+                    </label>
+
+                    <select id="perfil-categoria" name="categoria_loja">
+                        <option value="">Selecione</option>
+                        <option value="Mercado">Mercado</option>
+                        <option value="Padaria">Padaria</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Eletrônicos">Eletrônicos</option>
+                        <option value="Farmácia">Farmácia</option>
+                        <option value="Restaurante">Restaurante</option>
+                        <option value="Casa">Casa</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+
+
+                    <div class="grade-campos">
+
+                        <label for="perfil-endereco">
+                            Endereço
+
+                            <input
+                                id="perfil-endereco"
+                                name="endereco"
+                                type="text"
+                                maxlength="120"
+                                placeholder="Rua e número"
+                            >
+                        </label>
+
+                        <label for="perfil-bairro">
+                            Bairro
+
+                            <input
+                                id="perfil-bairro"
+                                name="bairro"
+                                type="text"
+                                maxlength="60"
+                                placeholder="Ex.: Centro"
+                            >
+                        </label>
+
+                        <label for="perfil-horario">
+                            Horário de funcionamento
+
+                            <input
+                                id="perfil-horario"
+                                name="horario"
+                                type="text"
+                                maxlength="80"
+                                placeholder="Ex.: Seg. a sáb., das 8h às 18h"
+                            >
+                        </label>
+
+                        <label for="perfil-instagram">
+                            Instagram
+
+                            <input
+                                id="perfil-instagram"
+                                name="instagram"
+                                type="text"
+                                maxlength="60"
+                                placeholder="@sualoja"
+                            >
+                        </label>
+
+                    </div>
+
+
+                    <button type="submit" class="botao botao-principal">
+                        Salvar dados da loja
+                    </button>
+
+                </form>
 
 
 
@@ -448,7 +579,7 @@
 
                 <form id="formPromo" class="painel formulario formulario-promo">
 
-                    <h2>Publicar uma promoção</h2>
+                    <h2 id="tituloFormPromo">Publicar uma promoção</h2>
 
 
                     <!-- TÍTULO -->
@@ -612,8 +743,12 @@
 
 
                     <!-- BOTÃO PUBLICAR -->
-                    <button type="submit" class="botao botao-principal">
+                    <button type="submit" id="btnPublicar" class="botao botao-principal">
                         Publicar promoção
+                    </button>
+
+                    <button type="button" id="cancelarEdicao" class="botao botao-secundario" hidden>
+                        Cancelar edição
                     </button>
 
                 </form>
@@ -629,7 +764,7 @@
                     <h2>Minhas promoções</h2>
 
                     <p class="texto-secundario">
-                        Acompanhe e exclua suas ofertas.
+                        Edite, pause ou exclua suas ofertas.
                     </p>
 
                     <div id="minhas" class="grade-promocoes"></div>
