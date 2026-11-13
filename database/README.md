@@ -15,16 +15,17 @@ No painel do Supabase: **SQL Editor > New query**, cole o conteúdo do arquivo e
 
 ## Situação das atualizações no banco de produção
 
-Conferido em 12/11/2026.
+Conferido em 13/11/2026: **todos os scripts estão aplicados.**
 
 | Script | O que faz | Situação |
 |---|---|---|
 | `001_cadastro_lojista.sql` | Dados de cadastro do lojista e tabela `lojas_privado`. | Aplicado |
 | `002_clientes_fotos_exclusao_conta.sql` | Tabela `clientes`, bucket de fotos e exclusão de conta. | Aplicado |
-| `003_denuncias.sql` | Denúncias de ofertas. | **Pendente** |
-| `004_limpeza_politicas.sql` | Remove regras duplicadas e limita o bucket de fotos. | **Pendente** |
+| `003_denuncias.sql` | Denúncias de ofertas. | Aplicado |
+| `004_limpeza_politicas.sql` | Remove regras duplicadas e limita o bucket de fotos. | Aplicado |
 
-Enquanto o `003` não for aplicado, o botão "Denunciar oferta" do aplicativo retorna erro, porque a tabela `denuncias` não existe.
+Recomendação pendente do Supabase: ativar a proteção contra senhas vazadas em
+**Authentication > Sign In / Up > Passwords** no painel (compara a senha com vazamentos conhecidos).
 
 ## Tabelas
 

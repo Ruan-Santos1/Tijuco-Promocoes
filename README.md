@@ -109,7 +109,6 @@ A conexão com o Supabase fica em `web/supabase.js` e `mobile/src/supabase.ts`. 
 
 ## Próximos passos
 
-- [ ] Aplicar as atualizações pendentes do banco (`database/README.md`).
 - [ ] Publicar a pasta `docs/` no GitHub Pages e informar os endereços em `mobile/src/privacy.ts`.
 - [ ] Levar ao site a edição de promoções e do perfil da loja.
 - [ ] Enviar as fotos do site para o Supabase Storage, como o aplicativo já faz.
