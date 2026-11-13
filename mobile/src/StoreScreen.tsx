@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from './supabase';
-import { s } from './theme';
-import { Btn, Chips, Field, PromoCard } from './ui';
+import { C, s } from './theme';
+import { Btn, Chips, Field, Icon, PromoCard } from './ui';
 import { Loja, Promo } from './types';
 import {
   base64ToBytes, brToIso, CATS, daysLeft, discount, fmtMoneyNum, isoToBr, maskDate, maskMoney, maskPhone,
@@ -143,13 +143,18 @@ export default function StoreScreen({ userId, shop, mine, reload, onShare }: Pro
 
         <Text style={[s.label, { marginHorizontal: 20, marginTop: 12 }]}>Foto</Text>
         <TouchableOpacity style={s.pickPhoto} onPress={choosePhoto} accessibilityRole="button">
-          {photo?.uri || currentUrl ? <Image source={{ uri: photo?.uri ?? currentUrl! }} style={s.image} /> : <Text style={s.panelText}>📷 Toque para tirar ou escolher uma foto</Text>}
+          {photo?.uri || currentUrl ? <Image source={{ uri: photo?.uri ?? currentUrl! }} style={s.image} /> : (
+            <>
+              <Icon name="camera-outline" size={30} color={C.navyMid} />
+              <Text style={s.panelText}>Toque para tirar ou escolher uma foto</Text>
+            </>
+          )}
         </TouchableOpacity>
         {(photo || currentUrl) && <Btn label="Remover foto" kind="secondary" onPress={() => { setPhoto(null); setCurrentUrl(null); }} />}
 
         <Field label="Preço da promoção (R$)" value={draft.preco} onChange={(v) => setD('preco')(maskMoney(v))} keyboard="number-pad" placeholder="0,00" />
         <Field label="Preço original (R$, opcional)" value={draft.preco_original} onChange={(v) => setD('preco_original')(maskMoney(v))} keyboard="number-pad" placeholder="0,00" />
-        {off > 0 && price !== null && old !== null && <Text style={s.savings}>🔥 {off}% OFF · economia de {money(old - price)}</Text>}
+        {off > 0 && price !== null && old !== null && <Text style={s.savings}>{off}% OFF · economia de {money(old - price)}</Text>}
 
         <Text style={[s.label, { marginHorizontal: 20, marginTop: 14 }]}>Categoria</Text>
         <Chips items={CATS} value={draft.categoria} onChange={setD('categoria')} icons />
@@ -183,13 +188,16 @@ export default function StoreScreen({ userId, shop, mine, reload, onShare }: Pro
           <View key={p.id}>
             <PromoCard p={{ ...p, lojas: shop }} />
             <View style={[s.rowBtns, { marginTop: -6, marginBottom: 10 }]}>
-              <Text style={[s.badgeText, { flex: 1, alignSelf: 'center', marginLeft: 6, color: st === 'ativa' ? '#176b38' : '#b45309' }]}>
-                {st === 'ativa' ? `● Ativa${d !== null ? ` · vence em ${d} dia(s)` : ''}` : st === 'pausada' ? '⏸ Pausada' : '⌛ Vencida'}
-              </Text>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 6 }}>
+                <Icon name={st === 'ativa' ? 'ellipse' : st === 'pausada' ? 'pause-outline' : 'hourglass-outline'} size={st === 'ativa' ? 9 : 13} color={st === 'ativa' ? C.success : C.warning} />
+                <Text style={[s.badgeText, { flexShrink: 1, color: st === 'ativa' ? C.success : C.warning }]}>
+                  {st === 'ativa' ? `Ativa${d !== null ? ` · vence em ${d} dia(s)` : ''}` : st === 'pausada' ? 'Pausada' : 'Vencida'}
+                </Text>
+              </View>
               <TouchableOpacity style={s.iconBtn} onPress={() => startEdit(p)}><Text style={s.iconBtnText}>Editar</Text></TouchableOpacity>
               {st !== 'expirada' && <TouchableOpacity style={[s.iconBtn, { marginLeft: 6 }]} onPress={() => toggle(p)}><Text style={s.iconBtnText}>{p.ativa ? 'Pausar' : 'Reativar'}</Text></TouchableOpacity>}
-              <TouchableOpacity style={[s.iconBtn, { marginLeft: 6 }]} onPress={() => onShare({ ...p, lojas: shop })}><Text style={s.iconBtnText}>↗</Text></TouchableOpacity>
-              <TouchableOpacity style={[s.iconBtn, { marginLeft: 6 }]} onPress={() => remove(p)}><Text style={[s.iconBtnText, { color: '#d93636' }]}>Excluir</Text></TouchableOpacity>
+              <TouchableOpacity style={[s.iconBtn, { marginLeft: 6 }]} onPress={() => onShare({ ...p, lojas: shop })} accessibilityLabel="Compartilhar"><Icon name="share-social-outline" size={14} color={C.navy} /></TouchableOpacity>
+              <TouchableOpacity style={[s.iconBtn, { marginLeft: 6 }]} onPress={() => remove(p)}><Text style={[s.iconBtnText, { color: C.red }]}>Excluir</Text></TouchableOpacity>
             </View>
           </View>
         );

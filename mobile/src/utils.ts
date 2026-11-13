@@ -1,8 +1,14 @@
+import type { ComponentProps } from 'react';
+import type { Ionicons } from '@expo/vector-icons';
 import { Loja, Promo } from './types';
 
+/** Nome de um ícone da família Ionicons. */
+export type IconName = ComponentProps<typeof Ionicons>['name'];
+
 export const CATS = ['Mercado', 'Padaria', 'Moda', 'Eletrônicos', 'Farmácia', 'Restaurante', 'Casa', 'Outros'];
-export const CAT_ICONS: Record<string, string> = {
-  Mercado: '🛒', Padaria: '🥖', Moda: '👕', 'Eletrônicos': '📱', 'Farmácia': '💊', Restaurante: '🍔', Casa: '🏠', Outros: '✨',
+export const CAT_ICONS: Record<string, IconName> = {
+  Mercado: 'cart-outline', Padaria: 'cafe-outline', Moda: 'shirt-outline', 'Eletrônicos': 'phone-portrait-outline',
+  'Farmácia': 'medkit-outline', Restaurante: 'restaurant-outline', Casa: 'home-outline', Outros: 'pricetag-outline',
 };
 
 export const storeOf = (l?: Loja | Loja[] | null): Loja | undefined => (Array.isArray(l) ? l[0] : l ?? undefined);

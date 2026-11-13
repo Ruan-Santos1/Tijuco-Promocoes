@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, RefreshControl, SafeAreaView, ScrollView, Share,
+  ActivityIndicator, Alert, Image, KeyboardAvoidingView, Linking, Platform, RefreshControl, SafeAreaView, ScrollView, Share,
   StatusBar, Text, TouchableOpacity, View,
 } from 'react-native';
 import { Session } from '@supabase/supabase-js';
@@ -8,18 +8,23 @@ import { supabase } from './src/supabase';
 import { ensureProfile } from './src/profile';
 import { s, C } from './src/theme';
 import { Loja, Promo, Role, Sort, Tab } from './src/types';
-import { Btn, Chips, Field, PromoCard, Segment } from './src/ui';
+import { Btn, Chips, Field, Icon, PromoCard } from './src/ui';
 import AuthScreen from './src/AuthScreen';
 import StoreScreen from './src/StoreScreen';
 import PromoDetail from './src/PromoDetail';
 import LegalModal, { Doc } from './src/LegalModal';
 import ReportModal from './src/ReportModal';
 import NewPasswordModal from './src/NewPasswordModal';
-import { CATS, CAT_ICONS, discount, parseRecovery, shareMessage, storeOf, todayIso } from './src/utils';
+import { CATS, CAT_ICONS, discount, IconName, parseRecovery, shareMessage, storeOf, todayIso } from './src/utils';
 
 const COLS = 'id,loja_id,titulo,descricao,preco,preco_original,imagem_url,categoria,validade,ativa,created_at,lojas(nome_loja,cidade,estado,bairro,endereco,telefone,horario,instagram)';
 const PAGE = 15;
-const NAV: Record<Tab, [string, string]> = { Inicio: ['🏠', 'Início'], Buscar: ['🔎', 'Buscar'], Favoritos: ['❤️', 'Favoritos'], Loja: ['🏪', 'Minha loja'], Perfil: ['👤', 'Perfil'] };
+// Aba: [ícone, ícone da aba ativa, rótulo]
+const NAV: Record<Tab, [IconName, IconName, string]> = {
+  Inicio: ['home-outline', 'home', 'Início'], Buscar: ['search-outline', 'search', 'Buscar'], Favoritos: ['heart-outline', 'heart', 'Favoritos'],
+  Loja: ['storefront-outline', 'storefront', 'Minha loja'], Perfil: ['person-outline', 'person', 'Perfil'],
+};
+const LOGO = require('./assets/logo.png');
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -176,7 +181,8 @@ export default function App() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
         {CATS.map((c) => (
           <TouchableOpacity key={c} style={[s.chip, category === c && s.chipOn]} onPress={() => setCategory(category === c ? '' : c)}>
-            <Text style={[s.chipText, category === c && s.chipTextOn]}>{CAT_ICONS[c]} {c}</Text>
+            <Icon name={CAT_ICONS[c]} size={14} color={category === c ? C.white : C.navyMid} />
+            <Text style={[s.chipText, category === c && s.chipTextOn]}>{c}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -188,13 +194,18 @@ export default function App() {
       <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.scroll}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={C.green} />}>
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={C.navy} colors={[C.navy]} />}>
           <View style={s.header}>
-            <View>
-              <Text style={s.logo}>Tijuco <Text style={{ color: C.green }}>Promoções</Text></Text>
-              <Text style={s.muted}>📍 Ituiutaba, Minas Gerais</Text>
+            <View style={s.brand}>
+              <Image source={LOGO} style={s.brandLogo} resizeMode="contain" accessibilityLabel="Logotipo Tijuco Promoções" />
+              <View>
+                <Text style={s.logo}>Tijuco <Text style={s.logoAccent}>Promoções</Text></Text>
+                <Text style={[s.muted, { marginTop: 1 }]}>Ituiutaba, Minas Gerais</Text>
+              </View>
             </View>
-            <TouchableOpacity onPress={() => setTab('Perfil')} style={s.avatar} accessibilityLabel="Minha conta"><Text>👤</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setTab('Perfil')} style={s.avatar} accessibilityRole="button" accessibilityLabel="Minha conta">
+              <Icon name="person" size={20} color={C.white} />
+            </TouchableOpacity>
           </View>
 
           {tab === 'Inicio' && (
@@ -204,7 +215,7 @@ export default function App() {
                 <Text style={s.bannerTitle}>{'As melhores ofertas,\nperto de você!'}</Text>
                 <Text style={s.bannerSub}>Promoções especiais de lojas da nossa cidade.</Text>
               </View>
-              <Field label="" value={search} onChange={setSearch} placeholder="🔎 O que você procura?" />
+              <Field label="" value={search} onChange={setSearch} placeholder="O que você procura?" />
               {categoryBar}
             </>
           )}
@@ -223,7 +234,7 @@ export default function App() {
 
           {tab === 'Favoritos' && (
             <>
-              <Text style={s.heading}>❤️ Favoritos</Text>
+              <Text style={s.heading}>Favoritos</Text>
               <Text style={[s.muted, { marginHorizontal: 20 }]}>Ofertas que você salvou</Text>
               {!session && (
                 <View style={s.notice}>
@@ -237,12 +248,12 @@ export default function App() {
           {isFeed && (
             <>
               <Text style={s.section}>{tab === 'Favoritos' ? 'Suas ofertas salvas' : tab === 'Buscar' ? `${list.length} resultado(s)` : 'Ofertas em destaque'}</Text>
-              {busy && <ActivityIndicator color={C.green} />}
+              {busy && <ActivityIndicator color={C.navy} />}
               {list.slice(0, visible).map((p) => (
                 <PromoCard key={p.id} p={p} favorite={favorites.includes(p.id)} onPress={() => setSelected(p)} onFav={() => toggleFavorite(p)} onShare={() => share(p)} />
               ))}
               {!busy && list.length === 0 && (
-                <View style={s.empty}><Text style={{ fontSize: 36 }}>🛍️</Text><Text style={s.muted}>{tab === 'Favoritos' ? 'Você ainda não salvou ofertas.' : 'Nenhuma oferta encontrada.'}</Text></View>
+                <View style={s.empty}><Icon name={tab === 'Favoritos' ? 'heart-outline' : 'pricetag-outline'} size={34} color="#8795aa" /><Text style={s.muted}>{tab === 'Favoritos' ? 'Você ainda não salvou ofertas.' : 'Nenhuma oferta encontrada.'}</Text></View>
               )}
               {list.length > visible && <Btn label="Ver mais ofertas" kind="secondary" onPress={() => setVisible(visible + PAGE)} />}
             </>
@@ -254,10 +265,10 @@ export default function App() {
                 <>
                   <Text style={s.heading}>Minha conta</Text>
                   <View style={s.panel}>
-                    <Text style={s.panelTitle}>{role === 'lojista' ? '🏪 Conta de lojista' : '🛍️ Conta de cliente'}</Text>
+                    <Text style={s.panelTitle}>{role === 'lojista' ? 'Conta de lojista' : 'Conta de cliente'}</Text>
                     <Text style={s.panelText}>{session.user.email}</Text>
-                    {role === 'lojista' && <Btn label="Gerenciar minha loja" kind="secondary" onPress={() => setTab('Loja')} />}
-                    <Btn label="Sair da conta" onPress={signOut} />
+                    {role === 'lojista' && <Btn label="Gerenciar minha loja" kind="secondary" icon="storefront-outline" onPress={() => setTab('Loja')} />}
+                    <Btn label="Sair da conta" icon="log-out-outline" onPress={signOut} />
                   </View>
                   <View style={s.panel}>
                     <Text style={s.panelTitle}>Privacidade e dados</Text>
@@ -277,7 +288,7 @@ export default function App() {
             <StoreScreen key={shop.id} userId={session.user.id} shop={shop} mine={mine} reload={reloadAll} onShare={share} />
           )}
 
-          <Text style={s.footer}>Feito para valorizar o comércio de Ituiutaba ❤️{'\n'}
+          <Text style={s.footer}>Feito para valorizar o comércio de Ituiutaba{'\n'}
             <Text style={s.link} onPress={() => setLegal('termos')}>Termos de Uso</Text>{'  ·  '}
             <Text style={s.link} onPress={() => setLegal('privacidade')}>Política de Privacidade</Text>
           </Text>
@@ -286,9 +297,9 @@ export default function App() {
 
       <View style={s.nav}>
         {tabs.map((t) => (
-          <TouchableOpacity key={t} style={s.navItem} onPress={() => setTab(t)} accessibilityRole="tab" accessibilityState={{ selected: tab === t }}>
-            <Text style={{ fontSize: 20 }}>{NAV[t][0]}</Text>
-            <Text style={[s.navText, tab === t && s.navActive]}>{NAV[t][1]}</Text>
+          <TouchableOpacity key={t} style={[s.navItem, tab === t && s.navItemOn]} onPress={() => setTab(t)} accessibilityRole="tab" accessibilityState={{ selected: tab === t }}>
+            <Icon name={NAV[t][tab === t ? 1 : 0]} size={22} color={tab === t ? C.navy : C.muted} />
+            <Text style={[s.navText, tab === t && s.navActive]}>{NAV[t][2]}</Text>
           </TouchableOpacity>
         ))}
       </View>

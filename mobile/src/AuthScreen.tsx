@@ -94,7 +94,7 @@ export default function AuthScreen({ onLegal, onDone }: { onLegal: (d: Doc) => v
   return (
     <>
       <Text style={s.heading}>Minha conta</Text>
-      <Segment items={[{ id: 'cliente', label: '🛍️ Sou cliente' }, { id: 'lojista', label: '🏪 Sou lojista' }]} value={role} onChange={(v) => { setRole(v as Role); setAccepted(false); }} />
+      <Segment items={[{ id: 'cliente', label: 'Sou cliente', icon: 'person-outline' }, { id: 'lojista', label: 'Sou lojista', icon: 'storefront-outline' }]} value={role} onChange={(v) => { setRole(v as Role); setAccepted(false); }} />
       <Text style={[s.muted, { marginHorizontal: 20 }]}>
         {role === 'cliente' ? 'Salve ofertas favoritas e compartilhe com amigos.' : 'Cadastre sua loja e publique promoções para toda a cidade.'}
       </Text>

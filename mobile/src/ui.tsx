@@ -1,8 +1,14 @@
 import React from 'react';
 import { Image, KeyboardTypeOptions, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { C, s } from './theme';
 import { Promo } from './types';
-import { CAT_ICONS, daysLeft, discount, money, storeOf } from './utils';
+import { CAT_ICONS, daysLeft, discount, IconName, money, storeOf } from './utils';
+
+/** Ícone padrão do app (família Ionicons). */
+export function Icon({ name, size = 16, color = C.muted }: { name: IconName; size?: number; color?: string }) {
+  return <Ionicons name={name} size={size} color={color} />;
+}
 
 type FieldProps = {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; multiline?: boolean;
@@ -14,7 +20,7 @@ export function Field({ label, value, onChange, placeholder, multiline, keyboard
     <View style={s.field}>
       {!!label && <Text style={s.label}>{label}</Text>}
       <TextInput
-        value={value} onChangeText={onChange} placeholder={placeholder ?? label} placeholderTextColor="#8b958d"
+        value={value} onChangeText={onChange} placeholder={placeholder ?? label} placeholderTextColor="#8b96a7"
         style={[s.input, multiline && s.multiline]} multiline={multiline} keyboardType={keyboard} maxLength={maxLength}
         secureTextEntry={secure} autoCapitalize={autoCapitalize ?? (secure || keyboard === 'email-address' ? 'none' : 'sentences')}
         autoCorrect={false}
@@ -24,11 +30,15 @@ export function Field({ label, value, onChange, placeholder, multiline, keyboard
   );
 }
 
-export function Btn({ label, onPress, kind = 'primary', disabled }: { label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'danger'; disabled?: boolean }) {
+type BtnKind = 'primary' | 'secondary' | 'danger' | 'whatsapp';
+const BTN_TEXT: Record<BtnKind, string> = { primary: C.white, secondary: C.navy, danger: C.red, whatsapp: C.white };
+
+export function Btn({ label, onPress, kind = 'primary', disabled, icon }: { label: string; onPress: () => void; kind?: BtnKind; disabled?: boolean; icon?: IconName }) {
   return (
     <TouchableOpacity onPress={onPress} disabled={disabled} accessibilityRole="button"
-      style={[s.button, kind === 'secondary' && s.secondary, kind === 'danger' && s.danger, disabled && s.disabled]}>
-      <Text style={[s.buttonText, kind === 'secondary' && s.secondaryText, kind === 'danger' && s.dangerText]}>{label}</Text>
+      style={[s.button, kind === 'secondary' && s.secondary, kind === 'danger' && s.danger, kind === 'whatsapp' && s.whatsapp, disabled && s.disabled]}>
+      {icon && <Icon name={icon} size={17} color={BTN_TEXT[kind]} />}
+      <Text style={[s.buttonText, { color: BTN_TEXT[kind] }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -37,19 +47,21 @@ export function Chips({ items, value, onChange, icons }: { items: string[]; valu
   return (
     <View style={s.chips}>
       {items.map((c) => (
-        <TouchableOpacity key={c} onPress={() => onChange(c)} style={[s.chip, value === c && s.chipOn]} accessibilityRole="button">
-          <Text style={[s.chipText, value === c && s.chipTextOn]}>{icons ? `${CAT_ICONS[c] ?? ''} ` : ''}{c}</Text>
+        <TouchableOpacity key={c} onPress={() => onChange(c)} style={[s.chip, value === c && s.chipOn]} accessibilityRole="button" accessibilityState={{ selected: value === c }}>
+          {icons && !!CAT_ICONS[c] && <Icon name={CAT_ICONS[c]} size={14} color={value === c ? C.white : C.navyMid} />}
+          <Text style={[s.chipText, value === c && s.chipTextOn]}>{c}</Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 }
 
-export function Segment({ items, value, onChange }: { items: { id: string; label: string }[]; value: string; onChange: (v: string) => void }) {
+export function Segment({ items, value, onChange }: { items: { id: string; label: string; icon?: IconName }[]; value: string; onChange: (v: string) => void }) {
   return (
     <View style={s.segment}>
       {items.map((i) => (
-        <TouchableOpacity key={i.id} onPress={() => onChange(i.id)} style={[s.segBtn, value === i.id && s.segOn]}>
+        <TouchableOpacity key={i.id} onPress={() => onChange(i.id)} style={[s.segBtn, value === i.id && s.segOn]} accessibilityRole="button" accessibilityState={{ selected: value === i.id }}>
+          {i.icon && <Icon name={i.icon} size={15} color={value === i.id ? C.white : C.text} />}
           <Text style={[s.segText, value === i.id && s.segTextOn]}>{i.label}</Text>
         </TouchableOpacity>
       ))}
@@ -61,7 +73,7 @@ export function Check({ checked, onToggle, children }: { checked: boolean; onTog
   return (
     <View style={s.check}>
       <TouchableOpacity onPress={onToggle} style={[s.box, checked && s.boxOn]} accessibilityRole="checkbox" accessibilityState={{ checked }}>
-        {checked && <Text style={{ color: C.white, fontWeight: '800' }}>✓</Text>}
+        {checked && <Icon name="checkmark" size={15} color={C.white} />}
       </TouchableOpacity>
       <Text style={s.checkText}>{children}</Text>
     </View>
@@ -80,7 +92,7 @@ export function PromoCard({ p, favorite, onPress, onFav, onShare, footer }: Card
     <TouchableOpacity style={s.card} onPress={onPress} activeOpacity={0.92} disabled={!onPress}>
       <View style={s.cardRow}>
         <View style={s.photo}>
-          {p.imagem_url ? <Image source={{ uri: p.imagem_url }} style={s.image} /> : <Text style={{ fontSize: 40 }}>{CAT_ICONS[p.categoria ?? ''] ?? '🛍️'}</Text>}
+          {p.imagem_url ? <Image source={{ uri: p.imagem_url }} style={s.image} /> : <Icon name={CAT_ICONS[p.categoria ?? ''] ?? 'pricetag-outline'} size={36} color="#8795aa" />}
           {off > 0 && <Text style={s.discount}>{off}% OFF</Text>}
         </View>
         <View style={s.cardBody}>
@@ -91,14 +103,34 @@ export function PromoCard({ p, favorite, onPress, onFav, onShare, footer }: Card
             <Text style={s.price}>{money(p.preco)}</Text>
             {Number(p.preco_original) > Number(p.preco) && <Text style={s.oldPrice}>{money(p.preco_original)}</Text>}
           </View>
-          {d !== null && d <= 3 && d >= 0 && <Text style={s.urgent}>{d === 0 ? '⏰ Último dia!' : `⏰ Termina em ${d} dia${d > 1 ? 's' : ''}`}</Text>}
-          {!!l?.bairro && <Text style={s.muted}>📍 {l.bairro}</Text>}
+          {d !== null && d <= 3 && d >= 0 && (
+            <View style={s.metaRow}>
+              <Icon name="alarm-outline" size={13} color={C.red} />
+              <Text style={s.urgent}>{d === 0 ? 'Último dia!' : `Termina em ${d} dia${d > 1 ? 's' : ''}`}</Text>
+            </View>
+          )}
+          {!!l?.bairro && (
+            <View style={s.metaRow}>
+              <Icon name="location-outline" size={13} />
+              <Text style={s.metaText}>{l.bairro}</Text>
+            </View>
+          )}
         </View>
       </View>
       {(onFav || onShare) && (
         <View style={s.cardActions}>
-          {onShare && <TouchableOpacity style={s.iconBtn} onPress={onShare} accessibilityLabel="Compartilhar"><Text style={s.iconBtnText}>↗ Compartilhar</Text></TouchableOpacity>}
-          {onFav && <TouchableOpacity style={s.iconBtn} onPress={onFav} accessibilityLabel="Favoritar"><Text style={[s.iconBtnText, favorite && { color: '#e33b52' }]}>{favorite ? '♥ Salvo' : '♡ Favoritar'}</Text></TouchableOpacity>}
+          {onShare && (
+            <TouchableOpacity style={s.iconBtn} onPress={onShare} accessibilityLabel="Compartilhar">
+              <Icon name="share-social-outline" size={14} color={C.navy} />
+              <Text style={s.iconBtnText}>Compartilhar</Text>
+            </TouchableOpacity>
+          )}
+          {onFav && (
+            <TouchableOpacity style={s.iconBtn} onPress={onFav} accessibilityLabel={favorite ? 'Remover dos favoritos' : 'Favoritar'}>
+              <Icon name={favorite ? 'heart' : 'heart-outline'} size={14} color={favorite ? C.red : C.navy} />
+              <Text style={[s.iconBtnText, favorite && { color: C.red }]}>{favorite ? 'Salvo' : 'Favoritar'}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
       {footer}
